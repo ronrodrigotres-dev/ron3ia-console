@@ -90,7 +90,7 @@ export function BackgroundEffects() {
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       {/* Cyber Grid */}
       <div 
         className="absolute inset-0 opacity-30"

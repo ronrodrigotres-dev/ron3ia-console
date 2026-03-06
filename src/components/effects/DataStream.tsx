@@ -1,22 +1,43 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 interface DataStreamProps {
   columns?: number;
   className?: string;
 }
 
-export function DataStream({ columns = 8, className = '' }: DataStreamProps) {
-  const [streams, setStreams] = useState<Array<{ id: number; chars: string[]; delay: number; speed: number }>>([]);
+interface StreamColumn {
+  id: number;
+  chars: string[];
+  delay: number;
+  speed: number;
+}
 
-  useEffect(() => {
-    const chars = '01ABCDEF';
-    const newStreams = Array.from({ length: columns }, (_, i) => ({
-      id: i,
-      chars: Array.from({ length: 20 }, () => chars[Math.floor(Math.random() * chars.length)]),
-      delay: Math.random() * 2,
-      speed: 1 + Math.random() * 2,
-    }));
-    setStreams(newStreams);
+const CHARS = '01ABCDEF';
+
+function pseudoRandom(seed: number) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+export function DataStream({ columns = 8, className = '' }: DataStreamProps) {
+  const streams = useMemo<StreamColumn[]>(() => {
+    return Array.from({ length: columns }, (_, i) => {
+      const chars = Array.from({ length: 20 }, (_, charIndex) => {
+        const normalized = pseudoRandom(i * 101 + charIndex * 17 + 13);
+        const index = Math.floor(normalized * CHARS.length);
+        return CHARS[index % CHARS.length];
+      });
+
+      const delay = pseudoRandom(i * 29 + 7) * 2;
+      const speed = 1 + pseudoRandom(i * 43 + 11) * 2;
+
+      return {
+        id: i,
+        chars,
+        delay,
+        speed,
+      };
+    });
   }, [columns]);
 
   return (

@@ -70,7 +70,7 @@ function App() {
       <BackgroundEffects />
       
       {/* Main Content - Full Screen Sections */}
-      <main className="relative z-10">
+      <main className="relative z-10 pb-24 lg:pb-0">
         {/* Screen 1: Hero */}
         {currentScreen === 'hero' && (
           <HeroScreen onStartDiagnosis={() => navigateTo('diagnosis')} />
@@ -136,13 +136,13 @@ function App() {
 
       {/* Bottom Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-        <div className="glass-panel-strong mx-4 mb-4 rounded-xl p-2 flex justify-around">
-          {screens.slice(0, 5).map((screen) => (
+        <div className="glass-panel-strong mx-4 mb-4 rounded-xl p-2 flex justify-between gap-1 overflow-x-auto">
+          {screens.map((screen) => (
             <button
               key={screen}
               onClick={() => navigateTo(screen)}
               className={`
-                px-3 py-2 rounded-lg text-[10px] font-mono uppercase transition-all
+                px-3 py-2 rounded-lg text-[10px] font-mono uppercase transition-all shrink-0
                 ${currentScreen === screen 
                   ? 'bg-neon-cyan/20 text-neon-cyan' 
                   : 'text-white/50'}
@@ -155,7 +155,7 @@ function App() {
       </div>
 
       {/* Footer */}
-      <Footer />
+      {currentScreen === 'cta-final' && <Footer />}
     </div>
   );
 }
