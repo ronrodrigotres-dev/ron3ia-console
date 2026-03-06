@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface StatusIndicatorProps {
   label: string;
@@ -8,22 +8,25 @@ interface StatusIndicatorProps {
 }
 
 export function StatusIndicator({ label, value, status = 'online', className = '' }: StatusIndicatorProps) {
-  const [displayValue, setDisplayValue] = useState(value);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    if (status === 'processing') {
-      const interval = setInterval(() => {
-        setDisplayValue(prev => {
-          const num = parseInt(prev.replace(/\D/g, '')) || 0;
-          const newNum = Math.min(100, num + Math.floor(Math.random() * 5));
-          return `${newNum}%`;
-        });
-      }, 200);
-      return () => clearInterval(interval);
-    } else {
-      setDisplayValue(value);
-    }
-  }, [status, value]);
+    if (status !== 'processing') return;
+
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1);
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [status]);
+
+  const displayValue = useMemo(() => {
+    if (status !== 'processing') return value;
+
+    const base = parseInt(value.replace(/\D/g, ''), 10) || 0;
+    const boost = Math.min(58, tick * 3);
+    return `${Math.min(100, base + boost)}%`;
+  }, [status, tick, value]);
 
   const statusColors = {
     online: 'bg-neon-cyan',
@@ -34,8 +37,9 @@ export function StatusIndicator({ label, value, status = 'online', className = '
 
   return (
     <div className={`flex items-center gap-3 px-3 py-2 glass-card rounded-lg ${className}`}>
-      <div className={`w-2 h-2 rounded-full ${statusColors[status]} animate-pulse`} 
-        style={{ boxShadow: `0 0 10px currentColor` }} 
+      <div
+        className={`w-2 h-2 rounded-full ${statusColors[status]} animate-pulse`}
+        style={{ boxShadow: '0 0 10px currentColor' }}
       />
       <div className="flex flex-col">
         <span className="text-[10px] text-white/50 font-mono uppercase tracking-wider">{label}</span>

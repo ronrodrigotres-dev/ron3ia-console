@@ -14,12 +14,15 @@ export function HeroSection() {
   ];
 
   useEffect(() => {
-    setIsLoaded(true);
+    const frame = requestAnimationFrame(() => setIsLoaded(true));
     const interval = setInterval(() => {
       setTerminalLine((prev) => (prev < terminalLines.length - 1 ? prev + 1 : prev));
     }, 800);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearInterval(interval);
+    };
+  }, [terminalLines.length]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
