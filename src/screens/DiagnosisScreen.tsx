@@ -23,7 +23,8 @@ export function DiagnosisScreen({ onComplete }: DiagnosisScreenProps) {
   ];
 
   useEffect(() => {
-    setIsLoaded(true);
+    const frame = requestAnimationFrame(() => setIsLoaded(true));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

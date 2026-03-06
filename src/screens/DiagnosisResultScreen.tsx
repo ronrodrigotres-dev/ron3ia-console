@@ -51,9 +51,13 @@ export function DiagnosisResultScreen({ domain, email, score, onContinue }: Diag
   const issues = generateIssues(score);
 
   useEffect(() => {
-    setIsLoaded(true);
+    const frame = requestAnimationFrame(() => setIsLoaded(true));
     const timer = setTimeout(() => setShowDetails(true), 500);
-    return () => clearTimeout(timer);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, []);
 
   const getScoreColor = (s: number) => {
