@@ -71,3 +71,13 @@ export default defineConfig([
   },
 ])
 ```
+
+## Deploy en GitHub Pages (evitar pantalla en blanco)
+
+Este proyecto usa Vite y necesita publicar la carpeta compilada `dist/` (no el código fuente con `/src/main.tsx`).
+
+1. Ve a **Settings → Pages** del repo.
+2. En **Build and deployment → Source**, selecciona **GitHub Actions**.
+3. Haz push a `main`.
+
+El workflow `.github/workflows/deploy-pages.yml` compila y publica `dist/` automáticamente.
