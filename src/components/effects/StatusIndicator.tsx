@@ -43,31 +43,8 @@ export function StatusIndicator({ label, value, status = 'online', className = '
       />
       <div className="flex flex-col">
         <span className="text-[10px] text-white/50 font-mono uppercase tracking-wider">{label}</span>
-        <span className="text-xs text-white/80 font-mono">{renderValue}</span>
+        <span className="text-xs text-white/80 font-mono">{displayValue}</span>
       </div>
     </div>
   );
-}
-
-function ProcessingValue({ value }: { value: string }) {
-  const [displayValue, setDisplayValue] = useState(() => `${parseNumericValue(value)}%`);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDisplayValue((prev) => {
-        const current = parseNumericValue(prev);
-        const next = Math.min(100, current + 2);
-        return `${next}%`;
-      });
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return <>{displayValue}</>;
-}
-
-function parseNumericValue(input: string) {
-  const parsed = Number.parseInt(input.replace(/\D/g, ''), 10);
-  return Number.isFinite(parsed) ? parsed : 0;
 }

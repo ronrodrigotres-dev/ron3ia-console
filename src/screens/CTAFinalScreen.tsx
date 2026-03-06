@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScanLine, Radar, DataStream } from '@/components/effects';
 import { Terminal, ArrowRight, Sparkles, Shield, Zap } from 'lucide-react';
 
@@ -7,7 +7,7 @@ interface CTAFinalScreenProps {
 }
 
 export function CTAFinalScreen({ onStartDiagnosis }: CTAFinalScreenProps) {
-  const isVisible = true;
+  const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {

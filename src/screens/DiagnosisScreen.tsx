@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScanLine, Radar, TerminalText } from '@/components/effects';
 import { Globe, Mail, Terminal, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -12,7 +12,7 @@ export function DiagnosisScreen({ onComplete }: DiagnosisScreenProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const isLoaded = true;
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const analysisSteps = [
     'Conectando con el dominio...',

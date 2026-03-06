@@ -16,7 +16,7 @@ interface Issue {
 }
 
 export function DiagnosisResultScreen({ domain, email, score, onContinue }: DiagnosisResultScreenProps) {
-  const isLoaded = true;
+  const [isLoaded, setIsLoaded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   // Generate random issues based on score

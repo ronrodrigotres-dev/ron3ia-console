@@ -14,7 +14,7 @@ const terminalLines = [
 ];
 
 export function HeroScreen({ onStartDiagnosis }: HeroScreenProps) {
-  const isLoaded = true;
+  const [isLoaded, setIsLoaded] = useState(false);
   const [terminalLine, setTerminalLine] = useState(0);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function HeroScreen({ onStartDiagnosis }: HeroScreenProps) {
       cancelAnimationFrame(frame);
       clearInterval(interval);
     };
-  }, [terminalLines.length]);
+  }, []);
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">

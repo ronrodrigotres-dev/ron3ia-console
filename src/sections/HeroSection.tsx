@@ -10,7 +10,7 @@ const terminalLines = [
 ];
 
 export function HeroSection() {
-  const isLoaded = true;
+  const [isLoaded, setIsLoaded] = useState(false);
   const [terminalLine, setTerminalLine] = useState(0);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function HeroSection() {
       cancelAnimationFrame(frame);
       clearInterval(interval);
     };
-  }, [terminalLines.length]);
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
