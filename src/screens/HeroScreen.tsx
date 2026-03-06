@@ -18,11 +18,15 @@ export function HeroScreen({ onStartDiagnosis }: HeroScreenProps) {
   const [terminalLine, setTerminalLine] = useState(0);
 
   useEffect(() => {
+    const frame = requestAnimationFrame(() => setIsLoaded(true));
     const interval = setInterval(() => {
       setTerminalLine((prev) => (prev < terminalLines.length - 1 ? prev + 1 : prev));
     }, 800);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearInterval(interval);
+    };
+  }, [terminalLines.length]);
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">

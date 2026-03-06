@@ -1,16 +1,44 @@
+import { useMemo } from 'react';
+
 interface DataStreamProps {
   columns?: number;
   className?: string;
 }
 
+interface StreamColumn {
+  id: number;
+  chars: string[];
+  delay: number;
+  speed: number;
+}
+
+const CHARS = '01ABCDEF';
+
+function pseudoRandom(seed: number) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 export function DataStream({ columns = 8, className = '' }: DataStreamProps) {
-  const chars = '01ABCDEF';
-  const streams = Array.from({ length: columns }, (_, i) => ({
-    id: i,
-    chars: Array.from({ length: 20 }, (_, idx) => chars[(i * 7 + idx * 3) % chars.length]),
-    delay: (i % 5) * 0.35,
-    speed: 1 + (i % 4) * 0.45,
-  }));
+  const streams = useMemo<StreamColumn[]>(() => {
+    return Array.from({ length: columns }, (_, i) => {
+      const chars = Array.from({ length: 20 }, (_, charIndex) => {
+        const normalized = pseudoRandom(i * 101 + charIndex * 17 + 13);
+        const index = Math.floor(normalized * CHARS.length);
+        return CHARS[index % CHARS.length];
+      });
+
+      const delay = pseudoRandom(i * 29 + 7) * 2;
+      const speed = 1 + pseudoRandom(i * 43 + 11) * 2;
+
+      return {
+        id: i,
+        chars,
+        delay,
+        speed,
+      };
+    });
+  }, [columns]);
 
   return (
     <div className={`flex gap-1 overflow-hidden ${className}`}>

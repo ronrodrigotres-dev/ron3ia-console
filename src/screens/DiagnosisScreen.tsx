@@ -22,6 +22,11 @@ export function DiagnosisScreen({ onComplete }: DiagnosisScreenProps) {
     'Generando diagnóstico...',
   ];
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setIsLoaded(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!domain || !email) return;

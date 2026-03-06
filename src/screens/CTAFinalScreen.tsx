@@ -10,6 +10,11 @@ export function CTAFinalScreen({ onStartDiagnosis }: CTAFinalScreenProps) {
   const isVisible = true;
   const [isHovering, setIsHovering] = useState(false);
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setIsVisible(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
