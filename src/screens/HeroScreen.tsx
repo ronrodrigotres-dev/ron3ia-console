@@ -6,16 +6,16 @@ interface HeroScreenProps {
   onStartDiagnosis: () => void;
 }
 
+const terminalLines = [
+  '> INICIANDO SISTEMA RON3IA...',
+  '> CARGANDO MÓDULOS DE INTELIGENCIA...',
+  '> CONECTANDO A RED NEURONAL...',
+  '> SISTEMA LISTO.',
+];
+
 export function HeroScreen({ onStartDiagnosis }: HeroScreenProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [terminalLine, setTerminalLine] = useState(0);
-
-  const terminalLines = [
-    '> INICIANDO SISTEMA RON3IA...',
-    '> CARGANDO MÓDULOS DE INTELIGENCIA...',
-    '> CONECTANDO A RED NEURONAL...',
-    '> SISTEMA LISTO.',
-  ];
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setIsLoaded(true));
@@ -26,7 +26,7 @@ export function HeroScreen({ onStartDiagnosis }: HeroScreenProps) {
       cancelAnimationFrame(frame);
       clearInterval(interval);
     };
-  }, [terminalLines.length]);
+  }, []);
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">

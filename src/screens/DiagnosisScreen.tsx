@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ScanLine, Radar, TerminalText } from '@/components/effects';
 import { Globe, Mail, Terminal, ArrowRight, Loader2 } from 'lucide-react';
 

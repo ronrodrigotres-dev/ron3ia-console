@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ScanLine, Radar, DataStream } from '@/components/effects';
 import { Terminal, ArrowRight, Sparkles, Shield, Zap } from 'lucide-react';
 

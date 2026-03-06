@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { ScanLine, Radar, DataStream, StatusIndicator, TerminalText } from '@/components/effects';
 import { Cpu, Activity, Zap, Terminal } from 'lucide-react';
 
+const terminalLines = [
+  '> INICIANDO SISTEMA RON3IA...',
+  '> CARGANDO MÓDULOS DE INTELIGENCIA...',
+  '> CONECTANDO A RED NEURONAL...',
+  '> SISTEMA LISTO. BIENVENIDO.',
+];
+
 export function HeroSection() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [terminalLine, setTerminalLine] = useState(0);
-
-  const terminalLines = [
-    '> INICIANDO SISTEMA RON3IA...',
-    '> CARGANDO MÓDULOS DE INTELIGENCIA...',
-    '> CONECTANDO A RED NEURONAL...',
-    '> SISTEMA LISTO. BIENVENIDO.',
-  ];
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setIsLoaded(true));
@@ -22,7 +22,7 @@ export function HeroSection() {
       cancelAnimationFrame(frame);
       clearInterval(interval);
     };
-  }, [terminalLines.length]);
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
