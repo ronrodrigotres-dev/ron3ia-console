@@ -1,23 +1,16 @@
-import { useEffect, useState } from 'react';
-
 interface DataStreamProps {
   columns?: number;
   className?: string;
 }
 
 export function DataStream({ columns = 8, className = '' }: DataStreamProps) {
-  const [streams, setStreams] = useState<Array<{ id: number; chars: string[]; delay: number; speed: number }>>([]);
-
-  useEffect(() => {
-    const chars = '01ABCDEF';
-    const newStreams = Array.from({ length: columns }, (_, i) => ({
-      id: i,
-      chars: Array.from({ length: 20 }, () => chars[Math.floor(Math.random() * chars.length)]),
-      delay: Math.random() * 2,
-      speed: 1 + Math.random() * 2,
-    }));
-    setStreams(newStreams);
-  }, [columns]);
+  const chars = '01ABCDEF';
+  const streams = Array.from({ length: columns }, (_, i) => ({
+    id: i,
+    chars: Array.from({ length: 20 }, (_, idx) => chars[(i * 7 + idx * 3) % chars.length]),
+    delay: (i % 5) * 0.35,
+    speed: 1 + (i % 4) * 0.45,
+  }));
 
   return (
     <div className={`flex gap-1 overflow-hidden ${className}`}>

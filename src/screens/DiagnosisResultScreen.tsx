@@ -16,7 +16,7 @@ interface Issue {
 }
 
 export function DiagnosisResultScreen({ domain, email, score, onContinue }: DiagnosisResultScreenProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoaded = true;
   const [showDetails, setShowDetails] = useState(false);
 
   // Generate random issues based on score
@@ -51,7 +51,6 @@ export function DiagnosisResultScreen({ domain, email, score, onContinue }: Diag
   const issues = generateIssues(score);
 
   useEffect(() => {
-    setIsLoaded(true);
     const timer = setTimeout(() => setShowDetails(true), 500);
     return () => clearTimeout(timer);
   }, []);

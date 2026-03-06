@@ -6,19 +6,18 @@ interface HeroScreenProps {
   onStartDiagnosis: () => void;
 }
 
+const terminalLines = [
+  '> INICIANDO SISTEMA RON3IA...',
+  '> CARGANDO MÓDULOS DE INTELIGENCIA...',
+  '> CONECTANDO A RED NEURONAL...',
+  '> SISTEMA LISTO.',
+];
+
 export function HeroScreen({ onStartDiagnosis }: HeroScreenProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoaded = true;
   const [terminalLine, setTerminalLine] = useState(0);
 
-  const terminalLines = [
-    '> INICIANDO SISTEMA RON3IA...',
-    '> CARGANDO MÓDULOS DE INTELIGENCIA...',
-    '> CONECTANDO A RED NEURONAL...',
-    '> SISTEMA LISTO.',
-  ];
-
   useEffect(() => {
-    setIsLoaded(true);
     const interval = setInterval(() => {
       setTerminalLine((prev) => (prev < terminalLines.length - 1 ? prev + 1 : prev));
     }, 800);

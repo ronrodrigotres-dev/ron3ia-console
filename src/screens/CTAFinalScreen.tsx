@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ScanLine, Radar, DataStream } from '@/components/effects';
 import { Terminal, ArrowRight, Sparkles, Shield, Zap } from 'lucide-react';
 
@@ -7,12 +7,8 @@ interface CTAFinalScreenProps {
 }
 
 export function CTAFinalScreen({ onStartDiagnosis }: CTAFinalScreenProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const isVisible = true;
   const [isHovering, setIsHovering] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">

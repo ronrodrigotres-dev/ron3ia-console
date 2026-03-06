@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ScanLine, Radar, TerminalText } from '@/components/effects';
 import { Globe, Mail, Terminal, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -12,7 +12,7 @@ export function DiagnosisScreen({ onComplete }: DiagnosisScreenProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoaded = true;
 
   const analysisSteps = [
     'Conectando con el dominio...',
@@ -21,10 +21,6 @@ export function DiagnosisScreen({ onComplete }: DiagnosisScreenProps) {
     'Procesando datos con IA...',
     'Generando diagnóstico...',
   ];
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

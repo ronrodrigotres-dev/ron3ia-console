@@ -2,19 +2,18 @@ import { useState, useEffect } from 'react';
 import { ScanLine, Radar, DataStream, StatusIndicator, TerminalText } from '@/components/effects';
 import { Cpu, Activity, Zap, Terminal } from 'lucide-react';
 
+const terminalLines = [
+  '> INICIANDO SISTEMA RON3IA...',
+  '> CARGANDO MÓDULOS DE INTELIGENCIA...',
+  '> CONECTANDO A RED NEURONAL...',
+  '> SISTEMA LISTO. BIENVENIDO.',
+];
+
 export function HeroSection() {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoaded = true;
   const [terminalLine, setTerminalLine] = useState(0);
 
-  const terminalLines = [
-    '> INICIANDO SISTEMA RON3IA...',
-    '> CARGANDO MÓDULOS DE INTELIGENCIA...',
-    '> CONECTANDO A RED NEURONAL...',
-    '> SISTEMA LISTO. BIENVENIDO.',
-  ];
-
   useEffect(() => {
-    setIsLoaded(true);
     const interval = setInterval(() => {
       setTerminalLine((prev) => (prev < terminalLines.length - 1 ? prev + 1 : prev));
     }, 800);
