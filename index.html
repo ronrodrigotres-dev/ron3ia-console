@@ -1,13 +1,174 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RON3IA - Autonomous Digital Intelligence</title>
-    <script type="module" crossorigin src="./assets/index-CCfop1pn.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DCoH7Sry.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RON3IA OS v31.0 | Tactical Command Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff; --surface: #f9fafb; --primary: #000000; --accent: #2563eb;
+            --border: #e5e7eb; --text-main: #000000; --text-muted: #6b7280;
+            --terminal-bg: #000000; --terminal-text: #22c55e;
+            --font-main: 'Plus Jakarta Sans', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text-main); font-family: var(--font-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        header { width: 100%; border-bottom: 1px solid var(--border); background: #fff; padding: 20px 40px; z-index: 100; }
+        .node-params { display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: end; }
+        .logo { font-weight: 800; font-size: 22px; letter-spacing: -1.5px; margin-right: 20px; }
+        .logo span { color: var(--accent); }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        input { border: 1px solid var(--border); padding: 12px; font-size: 14px; background: var(--surface); border-radius: 4px; outline: none; font-family: var(--font-main); }
+        .main-ops { flex: 1; width: 100%; max-width: 1600px; margin: 0 auto; padding: 40px; display: flex; flex-direction: column; gap: 30px; }
+        .terminal-area { background: var(--terminal-bg); border-radius: 8px; padding: 30px; min-height: 520px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid #1e293b; display: flex; flex-direction: column; }
+        textarea#command-console { flex: 1; background: transparent; border: none; color: var(--terminal-text); font-family: var(--font-mono); font-size: 18px; font-weight: 500; resize: none; outline: none; line-height: 1.6; width: 100%; }
+        .admin-tools { border-top: 1px solid var(--border); padding-top: 20px; }
+        .admin-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .btn-admin { background: #fff; border: 1px solid var(--border); padding: 10px 16px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; transition: all 0.2s; color: var(--text-muted); }
+        .btn-execute { background: var(--primary); color: #fff; border: none; padding: 14px 30px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; border-radius: 4px; cursor: pointer; }
+        .btn-execute:disabled { opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="node-params">
+            <div class="logo">ron3ia<span>.</span></div>
+            <div class="form-group"><label>Nodo / Marca</label><input type="text" id="brand-name" placeholder="BRAND"></div>
+            <div class="form-group"><label>URL de Destino</label><input type="url" id="site-url" placeholder="https://target.com"></div>
+            <div class="form-group"><label>Email de Enlace</label><input type="email" id="email" placeholder="root@node.cl"></div>
+            <button class="btn-execute" id="main-trigger" onclick="handleExecution()">Ejecutar</button>
+        </div>
+    </header>
+
+    <main class="main-ops">
+        <section class="terminal-area">
+            <textarea id="command-console" spellcheck="false" placeholder="Escriba un comando (ej: /flash) o use /help..."></textarea>
+        </section>
+        <section class="admin-tools">
+            <div style="font-size:10px; font-weight:800; margin-bottom:15px; color:var(--text-muted);">OPERADOR / ADMIN TOOLS</div>
+            <div class="admin-grid">
+                <button class="btn-admin" onclick="handleAdmin('AUDITAR_DRENAJE_DE_TOKENS')">[AUDITAR_TOKENS]</button>
+                <button class="btn-admin" onclick="handleAdmin('DETECTAR_COMPUTO_ATASCADO')">[DETECTAR_COMPUTO]</button>
+                <button class="btn-admin" onclick="handleAdmin('VERIFICAR_COMPLIANCE_PII')">[VERIFICAR_PII]</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const consoleEl = document.getElementById('command-console');
+        const triggerBtn = document.getElementById('main-trigger');
+
+        const API_BASE = window.location.hostname.includes('localhost') ? 'http://127.0.0.1:10000' : 'https://ron3ia-api-backup.onrender.com';
+
+        const COMMAND_DICT = {
+            '/flash':   { key: 'EJECUTAR_FLASH_AUDIT', name: 'Flash Audit' },
+            '/geo':     { key: 'INYECTAR_GEO_SHIELD', name: 'GEO Shield' },
+            '/roi':     { key: 'CONCILIAR_ROI_FINANCIERO', name: 'ROI Financiero' },
+            '/ivt':     { key: 'BLOQUEAR_TRAFICO_IVT', name: 'AdShield Core' },
+            '/pii':     { key: 'ACTIVAR_ANONIMIZACION_PII', name: 'Privacy Vault' }
+        };
+
+        function print(msg) {
+            const content = Array.isArray(msg) ? msg.join('\n') : String(msg);
+            consoleEl.value += '\n' + content;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        async function handleExecution() {
+            const rawInput = consoleEl.value.trim().split('\n').pop() || "";
+            const rawCmd = rawInput.split(' ')[0].toLowerCase();
+
+            if (rawCmd === '/help') {
+                print(["SERVICIOS DISPONIBLES:", ...Object.keys(COMMAND_DICT)]);
+                return;
+            }
+
+            const svc = COMMAND_DICT[rawCmd];
+            if (!svc) {
+                print("> COMANDO NO RECONOCIDO. use /help");
+                return;
+            }
+
+            const brand = document.getElementById('brand-name').value.trim();
+            const url = document.getElementById('site-url').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const command = rawCmd;
+
+            if (!url) {
+                print("> ERROR CONTROLADO: URL REQUERIDA");
+                return;
+            }
+
+            await callBackend({ svc, brand, url, email, command });
+        }
+
+        async function handleAdmin(action) {
+            const brand = document.getElementById('brand-name').value.trim();
+            const url = document.getElementById('site-url').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const command = `/admin:${action.toLowerCase()}`;
+            const svc = { key: action, name: action };
+            await callBackend({ svc, brand, url, email, command });
+        }
+
+        async function callBackend({ svc, brand, url, email, command }) {
+            triggerBtn.disabled = true;
+            print("----------------------------------");
+            print(`> [${new Date().toLocaleTimeString()}] INICIANDO COMANDO EN: ${API_BASE}/api/action`);
+
+            try {
+                const requestBody = {
+                    action: svc.key,
+                    payload: {
+                        brand: brand,
+                        url: url,
+                        domain: url,
+                        email: email,
+                        command: command
+                    }
+                };
+
+                const res = await fetch(`${API_BASE}/api/action`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!res.ok) {
+                    print(["> ERROR CONTROLADO: FALLA DE RED O SERVIDOR", `> CODIGO: HTTP_${res.status}`]);
+                    return;
+                }
+
+                const data = await res.json();
+                const out = typeof data.output === 'string' ? data.output.trim() : '';
+                const fallback = data && data.metadata && typeof data.metadata.message === 'string'
+                    ? data.metadata.message.trim()
+                    : '';
+                const rendered = out || fallback || "SIN SALIDA OPERATIVA DEL BACKEND.";
+
+                print([
+                    'RON3IA OS :: RESULTADO OPERATIVO',
+                    '----------------------------------',
+                    `> SERVICIO:  ${svc.name}`,
+                    `> NODO:      ${brand || 'N/A'}`,
+                    `> ESTADO:    ${data.status || 'OK'}`,
+                    `> SALIDA:`,
+                    '',
+                    rendered
+                ]);
+            } catch (err) {
+                print([
+                    '> ERROR CONTROLADO: NO FUE POSIBLE CONECTAR CON EL BACKEND.',
+                    '> ACCION: REINTENTE EN UNOS SEGUNDOS O VERIFIQUE CONECTIVIDAD.'
+                ]);
+            } finally {
+                triggerBtn.disabled = false;
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+            }
+        }
+    </script>
+</body>
 </html>
