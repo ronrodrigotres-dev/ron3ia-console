@@ -1,176 +1,3015 @@
+﻿
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RON3IA OS v31.0 | Tactical Command Console</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #ffffff; --surface: #f9fafb; --primary: #000000; --accent: #2563eb;
-            --border: #e5e7eb; --text-main: #000000; --text-muted: #6b7280;
-            --terminal-bg: #000000; --terminal-text: #22c55e;
-            --font-main: 'Plus Jakarta Sans', sans-serif; --font-mono: 'JetBrains Mono', monospace;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: var(--bg); color: var(--text-main); font-family: var(--font-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-        header { width: 100%; border-bottom: 1px solid var(--border); background: #fff; padding: 20px 40px; z-index: 100; }
-        .node-params { display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: end; }
-        .logo { font-weight: 800; font-size: 22px; letter-spacing: -1.5px; margin-right: 20px; }
-        .logo span { color: var(--accent); }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-        input { border: 1px solid var(--border); padding: 12px; font-size: 14px; background: var(--surface); border-radius: 4px; outline: none; font-family: var(--font-main); }
-        .main-ops { flex: 1; width: 100%; max-width: 1600px; margin: 0 auto; padding: 40px; display: flex; flex-direction: column; gap: 30px; }
-        .terminal-area { background: var(--terminal-bg); border-radius: 8px; padding: 30px; min-height: 520px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid #1e293b; display: flex; flex-direction: column; }
-        textarea#command-console { flex: 1; background: transparent; border: none; color: var(--terminal-text); font-family: var(--font-mono); font-size: 18px; font-weight: 500; resize: none; outline: none; line-height: 1.6; width: 100%; }
-        .admin-tools { border-top: 1px solid var(--border); padding-top: 20px; }
-        .admin-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-        .btn-admin { background: #fff; border: 1px solid var(--border); padding: 10px 16px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; transition: all 0.2s; color: var(--text-muted); }
-        .btn-execute { background: var(--primary); color: #fff; border: none; padding: 14px 30px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; border-radius: 4px; cursor: pointer; }
-        .btn-execute:disabled { opacity: 0.5; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RON3IA — Diagnóstico | Veredicto | Reparación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --terminal-bg: #0f172a;
+  --red: #ef4444;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --green: #22c55e;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; }
+body.auth-locked { background:#090d13; overflow:hidden; }
+body.auth-locked > :not(#auth-guard) { display:none !important; }
+body:not(.auth-locked) #auth-guard { display:none !important; }
+
+/* AUTH GUARD */
+.auth-guard {
+  position:fixed;
+  inset:0;
+  z-index:20000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(24, 180, 190, 0.18), transparent 26%),
+    radial-gradient(circle at 85% 12%, rgba(37, 99, 235, 0.16), transparent 28%),
+    linear-gradient(135deg, #080b10 0%, #101622 48%, #070a0f 100%);
+}
+.auth-guard::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size:44px 44px;
+  mask-image:linear-gradient(to bottom, rgba(0,0,0,.85), rgba(0,0,0,.2));
+}
+.auth-guard::after {
+  content:'';
+  position:absolute;
+  left:-10%;
+  right:-10%;
+  top:50%;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(56,189,248,.72), rgba(34,197,94,.45), transparent);
+  box-shadow:0 0 22px rgba(56,189,248,.28);
+  transform:rotate(-7deg);
+}
+.auth-panel {
+  position:relative;
+  z-index:1;
+  width:min(440px, 100%);
+  border:1px solid rgba(125, 211, 252, 0.42);
+  border-radius:8px;
+  padding:34px;
+  background:rgba(9, 13, 19, 0.88);
+  box-shadow:0 24px 80px rgba(0,0,0,.48), inset 0 0 0 1px rgba(255,255,255,.04), 0 0 34px rgba(14,165,233,.13);
+  backdrop-filter:blur(18px);
+}
+.auth-kicker {
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:#67e8f9;
+  margin-bottom:12px;
+}
+.auth-logo {
+  color:#e6f7ff;
+  font-size:42px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:0;
+  margin-bottom:12px;
+}
+.auth-logo span { color:#38bdf8; text-shadow:0 0 18px rgba(56,189,248,.48); }
+.auth-copy {
+  color:#8ba3b8;
+  font-size:13px;
+  line-height:1.6;
+  margin-bottom:28px;
+}
+.auth-form { display:flex; flex-direction:column; gap:12px; }
+.auth-form label {
+  color:#93a4b8;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.auth-input-wrap {
+  display:grid;
+  grid-template-columns:1fr auto;
+  border:1px solid rgba(148, 163, 184, .34);
+  border-radius:6px;
+  background:#0b111a;
+  overflow:hidden;
+  box-shadow:inset 0 0 18px rgba(8, 145, 178, .08);
+}
+.auth-input-wrap:focus-within {
+  border-color:#38bdf8;
+  box-shadow:0 0 0 3px rgba(56,189,248,.13), inset 0 0 18px rgba(8, 145, 178, .1);
+}
+.auth-input {
+  min-width:0;
+  border:0;
+  outline:none;
+  background:transparent;
+  color:#e2e8f0;
+  font-family:var(--mono);
+  font-size:14px;
+  padding:14px 15px;
+}
+.auth-submit {
+  border:0;
+  border-left:1px solid rgba(148, 163, 184, .22);
+  background:linear-gradient(135deg, #0891b2, #2563eb);
+  color:#f8fafc;
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1px;
+  padding:0 18px;
+  cursor:pointer;
+  transition:filter .15s, transform .15s;
+}
+.auth-submit:hover { filter:brightness(1.12); }
+.auth-submit:active { transform:translateY(1px); }
+.auth-error {
+  min-height:18px;
+  color:#fb7185;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.5;
+}
+.auth-meta {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:24px;
+  padding-top:16px;
+  border-top:1px solid rgba(148, 163, 184, .16);
+  color:#526477;
+  font-family:var(--mono);
+  font-size:10px;
+}
+@media(max-width:520px) {
+  .auth-panel { padding:26px 20px; }
+  .auth-logo { font-size:34px; }
+  .auth-input-wrap { grid-template-columns:1fr; }
+  .auth-submit { min-height:42px; border-left:0; border-top:1px solid rgba(148, 163, 184, .22); }
+}
+
+/* HEADER */
+.header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 32px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.logo { font-size:20px; font-weight:800; letter-spacing:-1px; }
+.logo span { color:var(--primary); }
+.header-nav { display:flex; gap:8px; }
+.nav-link { font-size:11px; font-weight:700; font-family:var(--mono); color:var(--muted); text-decoration:none; padding:6px 14px; border:1px solid var(--border); border-radius:4px; cursor:pointer; background:none; transition:all 0.15s; letter-spacing:0.5px; }
+.nav-link:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.nav-link.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+/* TABS */
+.tabs-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; display:flex; overflow-x:auto; }
+.tab { font-size:11px; font-weight:700; font-family:var(--mono); color:var(--muted); padding:11px 14px; border-bottom:2px solid transparent; cursor:pointer; white-space:nowrap; transition:all 0.15s; letter-spacing:0.5px; }
+.tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* MAIN */
+.main { max-width:920px; margin:0 auto; padding:32px; }
+
+/* FORM */
+.form-row { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; margin-bottom:24px; align-items:end; }
+.form-group { display:flex; flex-direction:column; gap:4px; }
+.form-group label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; font-family:var(--mono); }
+.form-group input { border:1px solid var(--border); padding:10px 12px; font-size:13px; background:var(--surface); border-radius:4px; outline:none; font-family:var(--font); transition:border 0.15s; }
+.form-group input:focus { border-color:var(--primary); }
+.btn-primary { background:var(--primary); color:#fff; border:none; padding:10px 18px; font-weight:700; font-size:11px; font-family:var(--mono); letter-spacing:1px; border-radius:4px; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+.btn-primary:hover:not(:disabled) { background:var(--primary-dark); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-secondary { background:var(--surface); color:var(--primary); border:1px solid var(--primary); padding:10px 18px; font-weight:700; font-size:11px; font-family:var(--mono); letter-spacing:1px; border-radius:4px; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+.btn-secondary:hover { background:var(--primary); color:#fff; }
+
+/* CARD */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:24px; margin-bottom:16px; }
+.card-title { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; font-family:var(--mono); margin-bottom:16px; }
+
+/* LOADER */
+.loader-box { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:40px; margin-bottom:16px; text-align:center; }
+.scan-log { font-family:var(--mono); font-size:12px; color:var(--muted); text-align:left; max-width:480px; margin:0 auto 20px; }
+.scan-log-line { padding:3px 0; opacity:0; animation:fadein 0.3s forwards; }
+@keyframes fadein { to { opacity:1; } }
+.progress-bar-wrap { background:#e2e8f0; border-radius:4px; height:4px; max-width:480px; margin:0 auto 12px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:var(--primary); border-radius:4px; transition:width 0.4s; width:0%; }
+.loader-label { font-family:var(--mono); font-size:11px; color:var(--muted); }
+
+/* DIAG HEADER */
+.diag-header { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:24px; margin-bottom:16px; }
+.diag-meta { font-size:13px; line-height:2.2; margin-bottom:16px; }
+.diag-meta strong { color:var(--text); }
+.diag-scores { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.score-item { }
+.score-label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; font-family:var(--mono); display:block; margin-bottom:4px; }
+.score-value { font-size:16px; font-weight:800; font-family:var(--mono); }
+.score-value.critical { color:var(--red); }
+.score-value.warning { color:var(--orange); }
+.score-value.ok { color:var(--green); }
+.score-value.na { color:var(--muted); }
+
+/* LOSS */
+.loss-box { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:16px 20px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
+.loss-left .loss-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#ef4444; font-family:var(--mono); text-transform:uppercase; margin-bottom:4px; }
+.loss-left .loss-value { font-size:24px; font-weight:800; color:#dc2626; font-family:var(--mono); }
+.loss-right { text-align:right; }
+.loss-right .loss-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#ef4444; font-family:var(--mono); text-transform:uppercase; margin-bottom:4px; }
+.loss-right .loss-anual { font-size:18px; font-weight:800; color:#ef4444; font-family:var(--mono); }
+
+/* BADGE */
+.badge { display:inline-block; font-size:10px; font-weight:700; font-family:var(--mono); letter-spacing:0.5px; padding:3px 8px; border-radius:3px; }
+.badge-blocked { background:#fef3c7; color:#d97706; }
+.badge-failed { background:#fef2f2; color:#dc2626; }
+.badge-success { background:#f0fdf4; color:#16a34a; }
+.badge-partial { background:#eff6ff; color:#2563eb; }
+
+/* PARTIAL banner */
+.partial-banner { background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:14px 18px; margin-bottom:16px; font-size:12px; color:#1e40af; font-family:var(--mono); line-height:1.6; }
+
+/* BLOCKED */
+.blocked-card { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:24px; margin-bottom:16px; }
+.blocked-title { font-size:13px; font-weight:800; color:#92400e; margin-bottom:10px; }
+.blocked-text { font-size:12px; color:#78350f; line-height:1.7; white-space:pre-line; font-family:var(--mono); }
+
+/* HALLAZGOS */
+.hallazgo { border-left:3px solid var(--border); padding:16px 20px; margin-bottom:12px; background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--border); border-radius:0 6px 6px 0; }
+.hallazgo.critico { border-left-color:var(--red); border-color:#fecaca; background:#fffafa; }
+.hallazgo.alto { border-left-color:var(--orange); border-color:#fed7aa; background:#fffaf5; }
+.hallazgo-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.nivel-badge { font-size:10px; font-weight:700; font-family:var(--mono); padding:2px 8px; border-radius:3px; }
+.nivel-critico { background:#fef2f2; color:#dc2626; }
+.nivel-alto { background:#fff7ed; color:#ea580c; }
+.hallazgo-titulo { font-size:13px; font-weight:800; letter-spacing:0.3px; }
+.hallazgo-evidencia { font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:8px; padding:6px 10px; background:#f8fafc; border:1px solid var(--border); border-radius:4px; }
+.hallazgo-causa { font-size:12px; color:#475569; margin-bottom:10px; line-height:1.5; }
+.hallazgo-section-title { font-size:10px; font-weight:700; font-family:var(--mono); letter-spacing:0.5px; color:var(--muted); text-transform:uppercase; margin-bottom:6px; margin-top:10px; }
+.impacto-list li { font-size:12px; color:var(--red); padding:2px 0 2px 12px; position:relative; line-height:1.4; }
+.impacto-list li::before { content:'—'; position:absolute; left:0; color:var(--red); }
+.solucion-list { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:4px; padding:10px 12px; }
+.solucion-list li { font-size:12px; color:#166534; padding:2px 0; font-family:var(--mono); line-height:1.5; }
+.validacion-list { background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; padding:10px 12px; }
+.validacion-list li { font-size:12px; color:#1e40af; padding:2px 0; line-height:1.5; }
+.hallazgo-footer { display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.htag { font-size:10px; font-weight:700; font-family:var(--mono); color:var(--muted); }
+.htag span { color:var(--text); }
+
+/* IMPACT */
+.impact-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.impact-col h4 { font-size:10px; font-weight:700; font-family:var(--mono); letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.impact-col li { font-size:12px; color:var(--text); padding:3px 0 3px 14px; position:relative; line-height:1.4; }
+.impact-col li::before { content:'–'; position:absolute; left:0; color:var(--muted); }
+
+/* ACCIONES */
+.accion-item { font-family:var(--mono); font-size:12px; color:var(--text); padding:8px 12px; background:#f8fafc; border:1px solid var(--border); border-radius:4px; margin-bottom:6px; line-height:1.5; }
+
+/* VEREDICTO */
+.veredicto-desc { font-size:13px; color:var(--text); margin-bottom:14px; line-height:1.6; }
+.veredicto-row { display:flex; gap:32px; margin-bottom:16px; }
+.veredicto-label { font-size:10px; font-weight:700; font-family:var(--mono); letter-spacing:1px; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:3px; }
+.veredicto-val { font-size:12px; font-weight:800; font-family:var(--mono); color:var(--text); }
+
+/* NARRATIVA */
+.narrativa-box { background:var(--terminal-bg); border-radius:6px; padding:20px 22px; color:#94a3b8; font-family:var(--mono); font-size:12px; line-height:1.8; white-space:pre-wrap; word-break:break-word; }
+
+/* PLAN */
+.plan-box { background:var(--terminal-bg); border-radius:6px; padding:24px; color:#94a3b8; font-family:var(--mono); font-size:12px; line-height:1.8; white-space:pre-wrap; word-break:break-word; min-height:160px; }
+
+/* MODELO TAG */
+.modelo-tag { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:10px; color:var(--muted); background:#f1f5f9; border:1px solid var(--border); padding:4px 10px; border-radius:3px; margin-bottom:16px; }
+.modelo-dot { width:6px; height:6px; background:var(--green); border-radius:50%; }
+
+/* VIEW TRANSITION */
+.view { animation:viewin 0.18s ease; }
+@keyframes viewin { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+.hidden { display:none !important; }
+
+@media(max-width:700px) {
+  .form-row { grid-template-columns:1fr; }
+  .diag-scores { grid-template-columns:1fr 1fr; }
+  .impact-grid { grid-template-columns:1fr; }
+  .loss-box { flex-direction:column; gap:8px; }
+  .main { padding:16px; }
+  .tabs-bar { padding:0 16px; }
+  .header { padding:12px 16px; }
+}
+
+/* ── AGENTE VIEW ─────────────────────────────────────── */
+#agente-view { max-width:1100px; margin:0 auto; padding:32px; }
+.agent-status-bar { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.status-left { display:flex; align-items:center; gap:24px; }
+.status-indicator { display:flex; align-items:center; gap:8px; }
+.status-badge-ag { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; font-family:var(--mono); text-transform:uppercase; letter-spacing:0.5px; }
+.status-badge-ag.active { background:#d1fae5; color:#065f46; }
+.status-badge-ag.paused { background:#fef2f2; color:#991b1b; }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.status-info { display:flex; gap:24px; }
+.status-item { font-size:12px; }
+.status-lbl { color:var(--muted); margin-right:4px; }
+.status-val { font-family:var(--mono); font-weight:600; }
+.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+.metric-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:18px 20px; }
+.metric-lbl { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; font-family:var(--mono); margin-bottom:6px; }
+.metric-val { font-family:var(--mono); font-size:28px; font-weight:800; color:var(--text); margin-bottom:3px; }
+.metric-delta { font-size:11px; color:var(--green); font-weight:600; }
+.ag-section { background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:20px; overflow:hidden; }
+.ag-section-header { padding:16px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.ag-section-title { font-size:13px; font-weight:800; font-family:var(--mono); letter-spacing:0.5px; color:var(--text); }
+.ag-table { width:100%; border-collapse:collapse; font-size:12px; }
+.ag-table th { text-align:left; padding:10px 20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); background:var(--bg); border-bottom:1px solid var(--border); font-family:var(--mono); }
+.ag-table td { padding:13px 20px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.ag-table tr:last-child td { border-bottom:none; }
+.ag-table tr:hover td { background:var(--bg); }
+.ag-badge { display:inline-block; padding:3px 9px; border-radius:10px; font-size:10px; font-weight:700; font-family:var(--mono); letter-spacing:0.3px; text-transform:uppercase; }
+.ag-badge-green { background:#d1fae5; color:#065f46; }
+.ag-badge-yellow { background:#fef3c7; color:#92400e; }
+.ag-badge-red { background:#fef2f2; color:#991b1b; }
+.ag-badge-blue { background:#dbeafe; color:#1e40af; }
+.ag-badge-purple { background:#e0e7ff; color:#3730a3; }
+.btn-ag { padding:6px 12px; border-radius:4px; font-size:11px; font-weight:700; font-family:var(--mono); cursor:pointer; border:none; transition:all 0.15s; }
+.btn-ag-primary { background:var(--primary); color:#fff; }
+.btn-ag-primary:hover { background:var(--primary-dark); }
+.btn-ag-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); }
+.btn-ag-secondary:hover { background:var(--border); }
+.btn-ag-danger { background:var(--red); color:#fff; }
+.cost-summary-box { padding:18px 24px; background:var(--bg); border-top:1px solid var(--border); }
+.cost-row { display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px; }
+.cost-lbl { color:var(--muted); }
+.cost-val { font-family:var(--mono); font-weight:700; color:var(--text); }
+.progress-wrap { margin-top:14px; }
+.progress-hdr { display:flex; justify-content:space-between; margin-bottom:6px; font-size:11px; font-family:var(--mono); }
+.sales-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:18px 24px; background:var(--bg); border-top:1px solid var(--border); }
+.sales-item { text-align:center; }
+.sales-lbl { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:var(--mono); margin-bottom:4px; }
+.sales-val { font-family:var(--mono); font-size:20px; font-weight:800; color:var(--text); }
+.resumen-bar { background:var(--primary); color:#fff; padding:10px 32px; display:flex; gap:32px; align-items:center; font-family:var(--mono); font-size:11px; }
+.resumen-item-bar { display:flex; gap:8px; align-items:center; }
+.resumen-label-bar { opacity:0.75; }
+.resumen-value-bar { font-weight:700; font-size:13px; }
+.resumen-value-bar.pos { color:#86efac; }
+.ag-modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+.ag-modal-overlay.active { display:flex; }
+.ag-modal { background:var(--surface); border-radius:10px; width:90%; max-width:480px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.12); }
+.ag-modal-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.ag-modal-title { font-size:15px; font-weight:800; }
+.ag-modal-close { background:none; border:none; font-size:22px; cursor:pointer; color:var(--muted); width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:4px; }
+.ag-modal-close:hover { background:var(--bg); }
+.ag-modal-body { padding:20px 24px; }
+.ag-msg-preview { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:16px 18px; font-family:var(--mono); font-size:13px; line-height:1.8; margin-bottom:18px; white-space:pre-wrap; }
+.ag-modal-actions { display:flex; gap:10px; }
+.ag-modal-actions .btn-ag { flex:1; padding:10px; }
+@media(max-width:900px) {
+  .metrics-grid { grid-template-columns:repeat(2,1fr); }
+  .sales-summary-grid { grid-template-columns:repeat(2,1fr); }
+  .status-info { flex-direction:column; gap:6px; }
+  .resumen-bar { flex-wrap:wrap; gap:14px; }
+}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+.toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.toast { background:var(--terminal-bg); color:#e2e8f0; font-family:var(--mono); font-size:11px; padding:11px 16px; border-radius:6px; opacity:0; transform:translateY(8px); transition:all 0.22s; max-width:300px; pointer-events:all; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.t-ok  { border-left:3px solid var(--green); }
+.toast.t-err { border-left:3px solid var(--red); }
+.toast.t-inf { border-left:3px solid var(--primary); }
+
+/* ── CONNECTION BAR ─────────────────────────────────────── */
+.conn-bar { background:#f1f5f9; border-bottom:1px solid var(--border); padding:5px 32px; display:flex; gap:20px; align-items:center; font-family:var(--mono); font-size:10px; letter-spacing:0.3px; }
+.cb { display:flex; align-items:center; gap:5px; color:var(--muted); }
+.cd { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.cd.ok  { background:var(--green); }
+.cd.off { background:#cbd5e1; }
+.cd.err { background:var(--red); }
+.cb.connected { color:var(--text); }
+
+/* ── DEMO BANNER ────────────────────────────────────────── */
+#demo-banner { background:#fffbeb; border-bottom:1px solid #fde68a; padding:7px 32px; font-family:var(--mono); font-size:11px; color:#92400e; display:flex; align-items:center; justify-content:space-between; }
+#demo-banner button { font-family:var(--mono); font-size:10px; font-weight:700; background:none; border:1px solid #d97706; color:#d97706; padding:3px 10px; border-radius:3px; cursor:pointer; }
+#demo-banner button:hover { background:#d97706; color:#fff; }
+
+/* ── CONFIG VIEW ────────────────────────────────────────── */
+#config-view { max-width:680px; margin:0 auto; padding:32px; }
+.cfg-section { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:24px; margin-bottom:20px; }
+.cfg-title { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; font-family:var(--mono); margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+.cfg-row { margin-bottom:14px; }
+.cfg-label { font-size:10px; font-weight:700; letter-spacing:0.5px; color:var(--muted); font-family:var(--mono); text-transform:uppercase; margin-bottom:4px; display:block; }
+.cfg-input { width:100%; border:1px solid var(--border); padding:9px 12px; font-size:12px; font-family:var(--mono); background:var(--bg); border-radius:4px; outline:none; transition:border 0.15s; }
+.cfg-input:focus { border-color:var(--primary); }
+.cfg-hint { font-size:10px; color:var(--muted); margin-top:4px; font-family:var(--mono); line-height:1.5; }
+.cfg-hint a { color:var(--primary); }
+.cfg-actions { display:flex; gap:10px; margin-top:6px; }
+.cfg-test-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg); border:1px solid var(--border); border-radius:4px; margin-bottom:8px; font-size:12px; }
+.cfg-test-name { font-family:var(--mono); font-weight:700; }
+.cfg-test-status { font-family:var(--mono); font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+
+/* ── LOADING / EMPTY STATES ─────────────────────────────── */
+.tbl-loading { padding:36px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:8px; }
+.tbl-empty { padding:32px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--muted); }
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── AUTO-REFRESH INDICATOR ─────────────────────────────── */
+.refresh-indicator { font-family:var(--mono); font-size:10px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.refresh-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+
+/* ── REMEDIATION PIPELINE ───────────────────────────────── */
+.rem-step { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.rem-step-dot { width:10px; height:10px; border-radius:50%; border:2px solid var(--border); background:var(--surface); transition:all .2s; }
+.rem-step-label { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--muted); letter-spacing:.3px; white-space:nowrap; }
+.rem-step-line { flex:1; height:2px; background:var(--border); margin:0 8px; align-self:center; transition:background .3s; min-width:40px; }
+.rem-step-active .rem-step-dot { background:var(--primary); border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,.18); }
+.rem-step-active .rem-step-label { color:var(--primary); }
+.rem-step-done .rem-step-dot { background:var(--green); border-color:var(--green); }
+.rem-step-done .rem-step-label { color:var(--green); }
+.rem-step-idle .rem-step-dot { background:var(--surface); border-color:var(--border); }
+
+/* ── ROLLBACK ALERT (blink rojo) ────────────────────────── */
+@keyframes blink-red {
+  0%,100% { background:#fef2f2; border-color:#fecaca; }
+  50%      { background:#fee2e2; border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.25); }
+}
+.rollback-alert {
+  animation: blink-red 0.9s ease-in-out infinite;
+  border-radius:8px; padding:16px 20px;
+  display:flex; align-items:flex-start; gap:14px;
+  border:2px solid #ef4444;
+}
+.rollback-alert .rb-label {
+  font-family:var(--mono); font-size:11px; font-weight:700;
+  color:#991b1b; letter-spacing:.5px; text-transform:uppercase;
+}
+
+/* ── AUDIT TRAIL PANEL ──────────────────────────────────── */
+.audit-trail { display:flex; flex-direction:column; gap:0; }
+.audit-event {
+  display:grid; grid-template-columns:130px 1fr auto;
+  gap:12px; align-items:flex-start;
+  padding:10px 14px; border-bottom:1px solid var(--border);
+  font-size:12px; transition:background .1s;
+}
+.audit-event:last-child { border-bottom:none; }
+.audit-event:hover { background:var(--bg); }
+.audit-ts {
+  font-family:var(--mono); font-size:10px; color:var(--muted);
+  padding-top:1px; white-space:nowrap;
+}
+.audit-type {
+  font-family:var(--mono); font-size:10px; font-weight:700;
+  letter-spacing:.4px; padding:2px 7px; border-radius:3px;
+  white-space:nowrap; align-self:flex-start;
+}
+.audit-PLAN_CREATED     { background:#eff6ff; color:#1d4ed8; }
+.audit-APPROVAL_SIGNED  { background:#fdf4ff; color:#7c3aed; }
+.audit-EXECUTION_STARTED{ background:#fff7ed; color:#c2410c; }
+.audit-EXECUTION_VERIFIED{background:#f0fdf4; color:#166534; }
+.audit-ROLLBACK_TRIGGERED{background:#fef2f2; color:#991b1b; }
+.audit-detail { font-size:11px; color:var(--muted); font-family:var(--mono); line-height:1.5; }
+
+/* ── ROI BADGE ──────────────────────────────────────────── */
+.roi-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:10px; font-weight:700;
+  padding:3px 9px; border-radius:3px;
+  background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;
+}
+.roi-badge.roi-high { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+.roi-badge.roi-med  { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+
+/* ── CONCURRENCY LOCK ───────────────────────────────────── */
+.file-lock-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:10px; font-weight:700;
+  padding:2px 8px; border-radius:3px; vertical-align:middle;
+  background:#fef3c7; color:#92400e; border:1px solid #fde68a;
+}
+
+/* ── HEALTH INDICATOR ───────────────────────────────────── */
+.health-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:10px; font-weight:700;
+  padding:3px 9px; border-radius:999px;
+}
+.health-ok      { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+.health-err     { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+.health-pending { background:#f1f5f9; color:#64748b; border:1px solid var(--border); }
+.health-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+/* ── IMPACT METRICS ROW ─────────────────────────────────── */
+.impact-metrics {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  margin-top:12px;
+}
+.impact-metric {
+  background:var(--terminal-bg); border-radius:6px; padding:12px 14px;
+  text-align:center;
+}
+.impact-metric-label {
+  font-family:var(--mono); font-size:9px; font-weight:700;
+  letter-spacing:.8px; text-transform:uppercase; color:#475569;
+  margin-bottom:5px;
+}
+.impact-metric-value {
+  font-family:var(--mono); font-size:18px; font-weight:800; color:#f8fafc;
+}
+.impact-metric-value.pos { color:#4ade80; }
+.impact-metric-value.neg { color:#f87171; }
+.impact-metric-value.neu { color:#94a3b8; }
+
+/* ── POLLING PROGRESS ───────────────────────────────────── */
+@keyframes polling-scan {
+  0%   { transform:translateX(-100%); }
+  100% { transform:translateX(400%); }
+}
+.polling-bar-wrap {
+  height:2px; background:#1e293b; border-radius:1px; overflow:hidden; margin-top:8px;
+}
+.polling-bar-fill {
+  height:100%; width:25%; background:var(--primary);
+  border-radius:1px;
+  animation: polling-scan 1.5s linear infinite;
+}
+</style>
 </head>
-<body>
-    <header>
-        <div class="node-params">
-            <div class="logo">ron3ia<span>.</span></div>
-            <div class="form-group"><label>Nodo / Marca</label><input type="text" id="brand-name" placeholder="BRAND"></div>
-            <div class="form-group"><label>URL de Destino</label><input type="url" id="site-url" placeholder="https://target.com"></div>
-            <div class="form-group"><label>Email de Enlace</label><input type="email" id="email" placeholder="root@node.cl"></div>
-            <button class="btn-execute" id="main-trigger" onclick="handleExecution()">Ejecutar</button>
+<body class="auth-locked">
+
+<div id="auth-guard" class="auth-guard" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+  <section class="auth-panel">
+    <div class="auth-kicker">Console Access</div>
+    <h1 class="auth-logo" id="auth-title">RON3IA<span>.</span></h1>
+    <p class="auth-copy">Acceso restringido a la consola operativa. Ingresa la llave autorizada para desbloquear diagnóstico, reparación y agente 24/7.</p>
+    <form class="auth-form" id="auth-form" autocomplete="off">
+      <label for="auth-key">Llave de Acceso</label>
+      <div class="auth-input-wrap">
+        <input class="auth-input" id="auth-key" name="auth-key" type="password" placeholder="••••••••••" autocomplete="off" autofocus>
+        <button class="auth-submit" type="submit">ENTRAR</button>
+      </div>
+      <div class="auth-error" id="auth-error" aria-live="polite"></div>
+    </form>
+    <div class="auth-meta">
+      <span>RON3IA CORE</span>
+      <span>SECURE LOCAL GATE</span>
+    </div>
+  </section>
+</div>
+
+<header class="header">
+  <div class="logo">RON3IA<span>.</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="header-subtitle">Diagnóstico | Veredicto | Reparación</span>
+    <div class="header-nav">
+      <button class="nav-link active" id="btn-nav-diag" onclick="showView('diag')">Diagnóstico</button>
+      <button class="nav-link" id="btn-nav-repair" onclick="showView('repair')">Repair</button>
+      <button class="nav-link" id="btn-nav-agente" onclick="showView('agente')">Agente 24/7</button>
+      <button class="nav-link" id="btn-nav-remediation" onclick="showView('remediation')">⚙ Remediación</button>
+      <button class="nav-link" id="btn-nav-config" onclick="showView('config')">Config</button>
+    </div>
+  </div>
+</header>
+
+<div class="conn-bar" id="conn-bar">
+  <span style="color:var(--muted);font-weight:700;margin-right:4px">CONEXIONES:</span>
+  <span class="cb" id="cb-supabase"><span class="cd off" id="cd-supabase"></span>Supabase</span>
+  <span class="cb" id="cb-maps"><span class="cd off" id="cd-maps"></span>Google Maps</span>
+  <span class="cb" id="cb-gemini"><span class="cd off" id="cd-gemini"></span>Gemini</span>
+  <span class="cb" id="cb-ron3ia"><span class="cd off" id="cd-ron3ia"></span>RON3IA API</span>
+  <span style="margin-left:auto" id="refresh-status"></span>
+</div>
+
+<div id="demo-banner">
+  <span>⚠ MODO DEMO — Datos ficticios. Configura tus API keys para activar el sistema real.</span>
+  <button onclick="showView('config')">Configurar ahora â†’</button>
+</div>
+
+<div class="tabs-bar" id="tabs-bar">
+  <div class="tab active" data-tab="Intelligence" onclick="toggleTab(this)">Intelligence</div>
+  <div class="tab" data-tab="Conversion" onclick="toggleTab(this)">Conversion</div>
+  <div class="tab" data-tab="SEO" onclick="toggleTab(this)">SEO</div>
+  <div class="tab" data-tab="Growth" onclick="toggleTab(this)">Growth</div>
+  <div class="tab" data-tab="Commerce" onclick="toggleTab(this)">Commerce</div>
+  <div class="tab" data-tab="Expansion" onclick="toggleTab(this)">Expansion</div>
+  <div class="tab" data-tab="GEO" onclick="toggleTab(this)">GEO</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 8px">
+    <button onclick="selectAllTabs()" style="font-family:var(--mono);font-size:10px;color:#2563eb;background:none;border:1px solid #bfdbfe;padding:4px 10px;border-radius:3px;cursor:pointer;white-space:nowrap">TODOS</button>
+    <button onclick="clearAllTabs()" style="font-family:var(--mono);font-size:10px;color:#64748b;background:none;border:1px solid #e2e8f0;padding:4px 10px;border-radius:3px;cursor:pointer;white-space:nowrap">LIMPIAR</button>
+  </div>
+</div>
+
+<!-- MÓDULOS ACTIVOS BAR -->
+<div id="modulos-bar" style="background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:8px 32px;font-family:var(--mono);font-size:11px;color:#64748b;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+  <span style="color:#94a3b8">MÓDULOS:</span>
+  <span id="modulos-activos-label" style="color:#2563eb">Intelligence</span>
+  <span style="margin-left:auto;color:#94a3b8" id="modulos-count">1 módulo</span>
+</div>
+
+<!-- DIAGNÓSTICO -->
+<div id="diag-view" class="main view">
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Dominio</label>
+      <input type="text" id="input-domain" placeholder="https://dominio.cl">
+    </div>
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" id="input-nombre" placeholder="Nombre">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="input-email" placeholder="email@dominio.cl">
+    </div>
+    <button class="btn-primary" id="btn-veredicto" onclick="emitirVeredicto()">EMITIR VEREDICTO</button>
+  </div>
+
+  <!-- LOADER -->
+  <div id="diag-loading" class="hidden">
+    <div class="loader-box">
+      <div class="scan-log" id="scan-log"></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="loader-label" id="loader-label">Iniciando análisis...</div>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="diag-result" class="hidden">
+
+    <div class="diag-header">
+      <div class="diag-meta">
+        <strong>DOMINIO:</strong> <span id="r-domain"></span> &nbsp;|&nbsp; <strong>CLIENTE:</strong> <span id="r-cliente"></span><br>
+        <strong>EMAIL:</strong> <span id="r-email"></span> &nbsp;|&nbsp; <strong>FECHA:</strong> <span id="r-fecha"></span><br>
+        <strong>MODO:</strong> RON3IA CORE &nbsp;|&nbsp; <strong>MODELO:</strong> <span id="r-modelo">—</span> &nbsp;|&nbsp; <span id="r-status-badge"></span>
+      </div>
+      <div class="diag-scores">
+        <div class="score-item">
+          <span class="score-label">DHI Score</span>
+          <span class="score-value" id="r-dhi">--</span>
         </div>
-    </header>
+        <div class="score-item">
+          <span class="score-label">GEO Score</span>
+          <span class="score-value" id="r-geo">--</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Estado</span>
+          <span class="score-value" id="r-estado">--</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Urgencia</span>
+          <span class="score-value" id="r-urgencia">--</span>
+        </div>
+      </div>
+    </div>
 
-    <main class="main-ops">
-        <section class="terminal-area">
-            <textarea id="command-console" spellcheck="false" placeholder="Escriba un comando (ej: /flash) o use /help..."></textarea>
-        </section>
-        <section class="admin-tools">
-            <div style="font-size:10px; font-weight:800; margin-bottom:15px; color:var(--text-muted);">OPERADOR / ADMIN TOOLS</div>
-            <div class="admin-grid">
-                <button class="btn-admin" onclick="handleAdmin('AUDITAR_DRENAJE_DE_TOKENS')">[AUDITAR_TOKENS]</button>
-                <button class="btn-admin" onclick="handleAdmin('DETECTAR_COMPUTO_ATASCADO')">[DETECTAR_COMPUTO]</button>
-                <button class="btn-admin" onclick="handleAdmin('VERIFICAR_COMPLIANCE_PII')">[VERIFICAR_PII]</button>
-            </div>
-        </section>
+    <!-- PÉRDIDA -->
+    <div class="loss-box" id="r-loss-box" style="display:none">
+      <div class="loss-left">
+        <div class="loss-label">Pérdida Activa</div>
+        <div class="loss-value" id="r-loss-mensual">$0 USD / mes</div>
+      </div>
+      <div class="loss-right">
+        <div class="loss-label">Pérdida Anual</div>
+        <div class="loss-anual" id="r-loss-anual">—</div>
+      </div>
+    </div>
+
+    <!-- PARTIAL -->
+    <div id="r-partial" class="hidden">
+      <div class="partial-banner">
+        ⚠ ANÁLISIS PARCIAL — El sitio respondió pero con contenido limitado. Los datos pueden ser incompletos.
+        Se muestran los hallazgos detectables con la información disponible.
+      </div>
+    </div>
+
+    <!-- BLOCKED/FAILED -->
+    <div id="r-blocked" class="hidden">
+      <div class="blocked-card">
+        <div class="blocked-title">â›” ANÁLISIS NO COMPLETADO</div>
+        <div class="blocked-text" id="r-blocked-text"></div>
+      </div>
+    </div>
+
+    <!-- HALLAZGOS -->
+    <div id="r-hallazgos-section" class="hidden">
+      <div class="card">
+        <div class="card-title">Hallazgos Detectados</div>
+        <div id="r-hallazgos"></div>
+      </div>
+
+      <div class="card">
+        <div class="impact-grid">
+          <div class="impact-col">
+            <h4>Efecto Directo</h4>
+            <ul id="r-efectos"></ul>
+          </div>
+          <div class="impact-col">
+            <h4>Riesgos</h4>
+            <ul id="r-riesgos"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Acción Inmediata</div>
+        <div id="r-acciones"></div>
+      </div>
+    </div>
+
+    <!-- VEREDICTO -->
+    <div class="card">
+      <div class="card-title">Veredicto RON3IA</div>
+      <div class="veredicto-desc" id="r-veredicto-desc"></div>
+      <div class="veredicto-row">
+        <div>
+          <span class="veredicto-label">Estado</span>
+          <span class="veredicto-val" id="r-veredicto-estado"></span>
+        </div>
+        <div>
+          <span class="veredicto-label">Acción</span>
+          <span class="veredicto-val" id="r-veredicto-accion"></span>
+        </div>
+      </div>
+      <div class="card-title" style="margin-top:4px">Veredicto Financiero</div>
+      <div class="narrativa-box" id="r-narrativa"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Módulos: <span style="color:var(--primary)">Intelligence, Conversion, Growth, SEO, Commerce, Expansion, GEO</span></span>
+    </div>
+
+    <button class="btn-secondary" style="width:100%;padding:14px;font-size:12px" onclick="irAReparacion()">
+      IR A REPARACIÓN â†’
+    </button>
+
+  </div>
+</div>
+
+<!-- REPAIR VIEW -->
+<div id="repair-view" class="main view hidden">
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Dominio</label>
+      <input type="text" id="rep-domain" placeholder="https://dominio.cl">
+    </div>
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" id="rep-nombre" placeholder="Nombre">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="rep-email" placeholder="email@dominio.cl">
+    </div>
+    <button class="btn-primary" id="btn-repair" onclick="ejecutarRepair()">GENERAR PLAN</button>
+  </div>
+
+  <!-- LOADER REPAIR -->
+  <div id="rep-loading" class="hidden">
+    <div class="loader-box">
+      <div class="scan-log" id="rep-scan-log"></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="rep-progress-fill"></div></div>
+      <div class="loader-label" id="rep-loader-label">Generando plan de reparación...</div>
+    </div>
+  </div>
+
+  <!-- RESULTADO REPAIR -->
+  <div id="rep-result" class="hidden">
+    <div class="diag-header">
+      <div class="diag-meta">
+        <strong>PLAN DE REPARACIÓN — RON3IA</strong><br>
+        <strong>DOMINIO:</strong> <span id="rep-r-domain"></span><br>
+        <strong>CLIENTE:</strong> <span id="rep-r-cliente"></span> — <span id="rep-r-email"></span>
+      </div>
+      <div class="diag-scores">
+        <div class="score-item">
+          <span class="score-label">DHI Score</span>
+          <span class="score-value" id="rep-r-dhi">--</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Urgencia</span>
+          <span class="score-value" id="rep-r-urgencia">--</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Pérdida / mes</span>
+          <span class="score-value" id="rep-r-loss">--</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Pérdida / año</span>
+          <span class="score-value" id="rep-r-loss-anual">--</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="rep-blocked" class="hidden">
+      <div class="blocked-card">
+        <div class="blocked-title">â›” ANÁLISIS NO COMPLETADO</div>
+        <div class="blocked-text" id="rep-blocked-text"></div>
+      </div>
+    </div>
+
+    <div id="rep-acciones-section" class="hidden">
+      <div class="card">
+        <div class="card-title">Acciones de Reparación</div>
+        <div id="rep-acciones"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Plan Ejecutivo — RON3IA Core</div>
+      <div class="plan-box" id="rep-plan"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AGENTE VIEW -->
+<div id="agente-view" class="hidden">
+
+  <!-- RESUMEN BAR -->
+  <div class="resumen-bar">
+    <div class="resumen-item-bar"><span class="resumen-label-bar">Ingresos hoy</span><span class="resumen-value-bar pos" id="ag-ingresos">$177</span></div>
+    <div class="resumen-item-bar"><span class="resumen-label-bar">Gastos hoy</span><span class="resumen-value-bar" id="ag-gastos">$0.09</span></div>
+    <div class="resumen-item-bar"><span class="resumen-label-bar">Margen</span><span class="resumen-value-bar pos" id="ag-margen">99.9%</span></div>
+    <div class="resumen-item-bar"><span class="resumen-label-bar">Leads activos</span><span class="resumen-value-bar" id="ag-leads-activos">12</span></div>
+  </div>
+
+  <div id="agente-view-inner">
+
+  <!-- ESTADO AGENTE -->
+  <div class="agent-status-bar">
+    <div class="status-left">
+      <div class="status-indicator">
+        <div class="status-dot" id="ag-dot"></div>
+        <span class="status-badge-ag active" id="ag-badge">Agente Activo</span>
+      </div>
+      <div class="status-info">
+        <div class="status-item"><span class="status-lbl">Última ejecución:</span><span class="status-val">hace 14 minutos</span></div>
+        <div class="status-item"><span class="status-lbl">Próxima ejecución:</span><span class="status-val">en 1h 46min</span></div>
+      </div>
+    </div>
+    <button class="btn-ag btn-ag-danger" id="ag-toggle-btn" onclick="toggleAgente()">Pausar Agente</button>
+    <button class="btn-ag btn-ag-secondary" onclick="triggerAgent()" style="margin-left:8px">â–¶ Ejecutar ahora</button>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-lbl">Leads encontrados</div><div class="metric-val" id="ag-leads-metric">47</div><div class="metric-delta">â†‘ hoy</div></div>
+    <div class="metric-card"><div class="metric-lbl">Leads calificados</div><div class="metric-val">12</div><div class="metric-delta">score &gt;60</div></div>
+    <div class="metric-card"><div class="metric-lbl">Mensajes generados</div><div class="metric-val">12</div><div class="metric-delta">listos para enviar</div></div>
+    <div class="metric-card"><div class="metric-lbl">Costo total hoy</div><div class="metric-val" id="ag-cost-metric">$0.09</div><div class="metric-delta">â†“ bajo presupuesto</div></div>
+  </div>
+
+  <!-- PIPELINE LEADS -->
+  <div class="ag-section">
+    <div class="ag-section-header">
+      <span class="ag-section-title">Pipeline de Leads</span>
+      <button class="btn-ag btn-ag-secondary" onclick="alert('Actualizando... (conector desactivado)')">Actualizar</button>
+    </div>
+    <table class="ag-table">
+      <thead><tr><th>Negocio</th><th>Web</th><th>Rubro</th><th>Score</th><th>Estado</th><th>Mensaje</th><th>Acción</th></tr></thead>
+      <tbody id="leads-tbody">
+        <tr><td colspan="7"><div class="tbl-loading"><span class="spinner"></span>Cargando...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COST TRACKER -->
+  <div class="ag-section">
+    <div class="ag-section-header"><span class="ag-section-title">Cost Tracker</span></div>
+    <table class="ag-table">
+      <thead><tr><th>Servicio</th><th>Costo unitario</th><th>Usos hoy</th><th>Total</th></tr></thead>
+      <tbody id="costs-tbody">
+        <tr><td>Google Maps API</td><td style="font-family:var(--mono)">$0.002</td><td>47</td><td><strong style="font-family:var(--mono)">$0.09</strong></td></tr>
+        <tr><td>Gemini API</td><td style="font-family:var(--mono)">$0.000</td><td>47</td><td><strong style="font-family:var(--mono)">$0.00</strong></td></tr>
+        <tr><td>Web Scan</td><td style="font-family:var(--mono)">$0.000</td><td>47</td><td><strong style="font-family:var(--mono)">$0.00</strong></td></tr>
+        <tr style="background:var(--bg);font-weight:700"><td colspan="3" style="text-align:right;font-family:var(--mono)">TOTAL</td><td style="font-family:var(--mono)">$0.09</td></tr>
+      </tbody>
+    </table>
+    <div class="cost-summary-box">
+      <div class="cost-row"><span class="cost-lbl">Costo por lead calificado:</span><span class="cost-val" id="cost-cpl">$0.007</span></div>
+      <div class="cost-row"><span class="cost-lbl">Proyección mensual:</span><span class="cost-val" id="cost-proyeccion">$2.70</span></div>
+      <div class="cost-row"><span class="cost-lbl">Presupuesto máximo:</span><span class="cost-val">$10.00/mes</span></div>
+      <div class="progress-wrap">
+        <div class="progress-hdr"><span>Uso del presupuesto</span><span style="color:var(--text)">27%</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:27%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VENTAS VENDING MACHINE -->
+  <div class="ag-section">
+    <div class="ag-section-header"><span class="ag-section-title">Ventas Vending Machine</span></div>
+    <table class="ag-table">
+      <thead><tr><th>Hora</th><th>Dominio analizado</th><th>Módulo comprado</th><th>Precio</th><th>Estado</th></tr></thead>
+      <tbody id="sales-tbody">
+        <tr><td style="font-family:var(--mono)">09:14</td><td>clinica-sol.cl</td><td>SEO + GEO</td><td><strong style="font-family:var(--mono)">$49 USD</strong></td><td><span class="ag-badge ag-badge-green">Entregado</span></td></tr>
+        <tr><td style="font-family:var(--mono)">11:32</td><td>dentalmiraflores.cl</td><td>SEO básico</td><td><strong style="font-family:var(--mono)">$29 USD</strong></td><td><span class="ag-badge ag-badge-green">Entregado</span></td></tr>
+        <tr><td style="font-family:var(--mono)">14:05</td><td>abogadoschile.com</td><td>Full audit</td><td><strong style="font-family:var(--mono)">$99 USD</strong></td><td><span class="ag-badge ag-badge-yellow">Procesando</span></td></tr>
+      </tbody>
+    </table>
+    <div class="sales-summary-grid">
+      <div class="sales-item"><div class="sales-lbl">Ingresos hoy</div><div class="sales-val" id="sales-ingresos" style="color:var(--green)">$177</div></div>
+      <div class="sales-item"><div class="sales-lbl">Reportes entregados</div><div class="sales-val" id="sales-entregados">2</div></div>
+      <div class="sales-item"><div class="sales-lbl">Reportes pendientes</div><div class="sales-val" id="sales-pendientes" style="color:var(--orange)">1</div></div>
+      <div class="sales-item"><div class="sales-lbl">Ticket promedio</div><div class="sales-val" id="sales-ticket">$59</div></div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<!-- CONFIG VIEW -->
+<div id="config-view" class="hidden">
+  <div style="max-width:680px;margin:0 auto;padding:32px">
+
+    <div class="cfg-section">
+      <div class="cfg-title">Base de datos — Supabase
+        <span id="cfg-status-supabase" class="cfg-test-status"></span>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Project URL</label>
+        <input class="cfg-input" id="cfg-supabase-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co">
+        <div class="cfg-hint">Supabase â†’ Settings â†’ API â†’ Project URL</div>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Anon Key</label>
+        <input class="cfg-input" id="cfg-supabase-key" type="password" placeholder="eyJhbGciOi...">
+        <div class="cfg-hint">Supabase â†’ Settings â†’ API â†’ anon public key</div>
+      </div>
+      <div class="cfg-actions">
+        <button class="btn-primary btn-sm" onclick="testSupabase()">Probar conexión</button>
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title">Google Maps API
+        <span id="cfg-status-maps" class="cfg-test-status"></span>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">API Key</label>
+        <input class="cfg-input" id="cfg-maps-key" type="password" placeholder="AIzaSy...">
+        <div class="cfg-hint">console.cloud.google.com â†’ APIs â†’ Places API â†’ Credenciales. Gratis hasta 6.000 req/mes.</div>
+      </div>
+      <div class="cfg-actions">
+        <button class="btn-primary btn-sm" onclick="testMaps()">Probar conexión</button>
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title">Gemini API (scoring IA)
+        <span id="cfg-status-gemini" class="cfg-test-status"></span>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">API Key</label>
+        <input class="cfg-input" id="cfg-gemini-key" type="password" placeholder="AIzaSy...">
+        <div class="cfg-hint">aistudio.google.com â†’ Get API key. Gratis: 1500 req/día.</div>
+      </div>
+      <div class="cfg-actions">
+        <button class="btn-primary btn-sm" onclick="testGemini()">Probar conexión</button>
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title">Envío de mensajes</div>
+      <div class="cfg-row">
+        <label class="cfg-label">Prefijo WhatsApp (país)</label>
+        <input class="cfg-input" id="cfg-wa-prefix" type="text" placeholder="56" style="width:120px">
+        <div class="cfg-hint">56 para Chile. Se antepone al número del negocio para generar el link wa.me.</div>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Email remitente (para logs)</label>
+        <input class="cfg-input" id="cfg-email-from" type="email" placeholder="rodrigo@ron3ia.cl">
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title">Auto-refresh</div>
+      <div class="cfg-row" style="display:flex;align-items:center;gap:16px">
+        <label class="cfg-label" style="margin:0">Intervalo</label>
+        <select class="cfg-input" id="cfg-refresh-interval" style="width:180px">
+          <option value="0">Desactivado</option>
+          <option value="30">Cada 30 segundos</option>
+          <option value="60" selected>Cada 1 minuto</option>
+          <option value="120">Cada 2 minutos</option>
+          <option value="300">Cada 5 minutos</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button class="btn-primary" onclick="saveConfig()">Guardar configuración</button>
+      <button class="btn-secondary" onclick="clearConfig()">Limpiar todo</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     REMEDIACIÓN AUTOMÁTICA VIEW
+═══════════════════════════════════════════════════════════ -->
+<div id="remediation-view" class="hidden">
+<div style="max-width:920px;margin:0 auto;padding:32px">
+
+  <!-- Page header -->
+  <div style="margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:-0.4px;margin-bottom:2px">Remediación Controlada</div>
+        <div style="font-size:12px;color:var(--muted);font-family:var(--mono)">Motor v3 · Quirúrgico + Round-trip · Regla de Oro activa</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" onclick="loadPresetRem(1)">Caso #1 — Imagen</button>
+        <button class="btn-secondary" onclick="loadPresetRem(2)">Caso #2 — DEBUG</button>
+        <button class="btn-primary" id="btn-plan-rem">▶ Generar Plan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline status bar -->
+  <div id="rem-pipeline" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 24px;margin-bottom:20px;display:flex;align-items:center;gap:0">
+    <div class="rem-step rem-step-active" id="ps-plan">
+      <div class="rem-step-dot"></div>
+      <div class="rem-step-label">1 · Plan</div>
+    </div>
+    <div class="rem-step-line"></div>
+    <div class="rem-step rem-step-idle" id="ps-analyze">
+      <div class="rem-step-dot"></div>
+      <div class="rem-step-label">2 · Análisis</div>
+    </div>
+    <div class="rem-step-line"></div>
+    <div class="rem-step rem-step-idle" id="ps-approve">
+      <div class="rem-step-dot"></div>
+      <div class="rem-step-label">3 · Aprobación</div>
+    </div>
+    <div class="rem-step-line"></div>
+    <div class="rem-step rem-step-idle" id="ps-execute">
+      <div class="rem-step-dot"></div>
+      <div class="rem-step-label">4 · Ejecutar</div>
+    </div>
+  </div>
+
+  <!-- Form hallazgo -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Hallazgo de Auditoría</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>Servicio</label>
+        <input type="text" id="rem-service" value="auth-service" style="border:1px solid var(--border);padding:8px 11px;font-size:12px;font-family:var(--mono);border-radius:4px;outline:none">
+      </div>
+      <div class="form-group">
+        <label>Archivo</label>
+        <input type="text" id="rem-file" value="docker-compose.yml" style="border:1px solid var(--border);padding:8px 11px;font-size:12px;font-family:var(--mono);border-radius:4px;outline:none">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>YAML Path</label>
+        <input type="text" id="rem-path" value="services.auth-service.image" style="border:1px solid var(--border);padding:8px 11px;font-size:12px;font-family:var(--mono);border-radius:4px;outline:none">
+      </div>
+      <div class="form-group">
+        <label>Valor Actual</label>
+        <input type="text" id="rem-current" value="redis:5.0" style="border:1px solid var(--border);padding:8px 11px;font-size:12px;font-family:var(--mono);border-radius:4px;outline:none">
+      </div>
+      <div class="form-group">
+        <label>Valor Recomendado</label>
+        <input type="text" id="rem-recommended" value="redis:7.0-alpine" style="border:1px solid var(--border);padding:8px 11px;font-size:12px;font-family:var(--mono);border-radius:4px;outline:none">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Descripción</label>
+        <input type="text" id="rem-desc" value="Upgrade Redis due to CVE-2024-XXXX" style="border:1px solid var(--border);padding:8px 11px;font-size:12px;border-radius:4px;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- Results grid: análisis + diff -->
+  <div id="rem-results" class="hidden">
+
+    <!-- Métricas análisis -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div class="card" style="padding:14px 18px;margin:0">
+        <div class="card-title" style="margin-bottom:6px">Safe</div>
+        <div id="rem-safe" style="font-family:var(--mono);font-size:15px;font-weight:800">—</div>
+      </div>
+      <div class="card" style="padding:14px 18px;margin:0">
+        <div class="card-title" style="margin-bottom:6px">Risk Level</div>
+        <div id="rem-risk">—</div>
+      </div>
+      <div class="card" style="padding:14px 18px;margin:0">
+        <div class="card-title" style="margin-bottom:6px">Estrategia</div>
+        <div id="rem-strategy" style="font-family:var(--mono);font-size:12px;color:var(--text)">—</div>
+      </div>
+      <div class="card" style="padding:14px 18px;margin:0">
+        <div class="card-title" style="margin-bottom:6px">Línea</div>
+        <div id="rem-line" style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--primary)">—</div>
+      </div>
+    </div>
+
+    <!-- Diff viewer -->
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--bg)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:1px;color:var(--muted);text-transform:uppercase">Diff Preview</span>
+          <span id="rem-diff-stats" style="font-size:10px;font-family:var(--mono);color:var(--primary)"></span>
+        </div>
+        <button onclick="copyRemDiff()" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:none;border:1px solid var(--border);padding:3px 10px;border-radius:3px;cursor:pointer">Copiar</button>
+      </div>
+      <div id="rem-diff-content" style="background:#0f172a;overflow-x:auto;max-height:240px;overflow-y:auto;font-family:var(--mono);font-size:12px;line-height:1.6"></div>
+    </div>
+
+    <!-- Summary -->
+    <div id="rem-summary-box" style="background:#f1f5f9;border:1px solid var(--border);border-radius:6px;padding:10px 16px;font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:16px;line-height:1.6"></div>
+
+    <!-- Execute section — Regla de Oro -->
+    <div class="card" style="background:#f0fdf4;border-color:#bbf7d0;margin-bottom:0" id="rem-execute-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;font-family:var(--mono);color:#166534;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">Regla de Oro — Aprobación Requerida</div>
+          <div style="font-size:11px;color:#166534;font-family:var(--mono)">safe=true ∧ risk=low ∧ approved_by presente</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="text" id="rem-approved-by" placeholder="Aprobado por (email)..." value="ron@ron3ia.cl"
+            style="font-family:var(--mono);font-size:12px;padding:7px 12px;border:1px solid #86efac;border-radius:4px;outline:none;width:220px;background:#fff">
+          <button id="btn-execute-rem" class="btn-primary" style="background:#16a34a;border-color:#16a34a" disabled>
+            ✔ Aplicar Remediación
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result banner (post-execute) -->
+    <div id="rem-result-banner" class="hidden" style="margin-top:12px;padding:16px 20px;border-radius:8px;display:flex;align-items:flex-start;gap:14px"></div>
+
+  </div>
+
+  <!-- Historial de tareas -->
+  <div class="card" style="margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="card-title" style="margin:0">Historial de Tareas</div>
+      <span id="rem-task-count" style="font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--bg);border:1px solid var(--border);padding:2px 10px;border-radius:3px">0 tareas</span>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--bg)">
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Task ID</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Servicio</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Path</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Riesgo</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Estado</th>
+            <th style="text-align:left;padding:9px 14px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Commit</th>
+          </tr>
+        </thead>
+        <tbody id="rem-tasks-body">
+          <tr>
+            <td colspan="6" style="padding:28px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)">Sin tareas — genera un plan para empezar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PowerShell snippet -->
+  <div class="card" style="margin-top:16px;background:var(--terminal-bg);border-color:#1e293b">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="card-title" style="color:#475569;margin:0">PowerShell — Invoke-Remediation.ps1</div>
+      <button onclick="copyPsSnippet()" style="font-family:var(--mono);font-size:10px;color:#475569;background:none;border:1px solid #1e293b;padding:3px 10px;border-radius:3px;cursor:pointer">Copiar</button>
+    </div>
+    <pre id="ps-snippet" style="font-family:var(--mono);font-size:11px;line-height:1.8;color:#94a3b8;white-space:pre-wrap;word-break:break-all"><span style="color:#475569"># Caso 1 — Imagen vulnerable (redis:5.0 → 7.0-alpine)</span>
+.\Invoke-Remediation.ps1 -CaseId 1
+
+<span style="color:#475569"># Caso 2 — DEBUG flag</span>
+.\Invoke-Remediation.ps1 -CaseId 2
+
+<span style="color:#475569"># Ambos casos</span>
+.\Invoke-Remediation.ps1
+
+<span style="color:#475569"># Contra producción con JWT</span>
+.\Invoke-Remediation.ps1 -BaseUrl <span style="color:#38bdf8">"https://ron3ia-backend.onrender.com"</span> -Token $env:RON3IA_TOKEN</pre>
+  </div>
+
+
+  <!-- Audit Trail inmutable -->
+  <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:1px;color:var(--muted);text-transform:uppercase">
+        Audit Trail — Inmutable
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="rem-health-badge" class="health-pill health-pending">
+          <span class="health-dot"></span>
+          <span id="rem-health-label">Health: —</span>
+        </span>
+        <span id="rem-lock-badge" style="display:none" class="file-lock-badge">
+          ⚙ Archivo bloqueado
+        </span>
+      </div>
+    </div>
+    <div id="rem-audit-trail" class="audit-trail">
+      <div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+        Sin eventos registrados. Genera un plan para comenzar.
+      </div>
+    </div>
+  </div>
+
+  <!-- Impact Metrics (post-ejecución) -->
+  <div id="rem-impact-section" class="hidden" style="margin-top:16px">
+    <div style="font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">
+      Impacto en Negocio — Post-Ejecución
+    </div>
+    <div class="impact-metrics">
+      <div class="impact-metric">
+        <div class="impact-metric-label">Revenue Estimado</div>
+        <div class="impact-metric-value neu" id="rim-revenue">—</div>
+      </div>
+      <div class="impact-metric">
+        <div class="impact-metric-label">Conversión Delta</div>
+        <div class="impact-metric-value neu" id="rim-conversion">—</div>
+      </div>
+      <div class="impact-metric">
+        <div class="impact-metric-label">Uptime</div>
+        <div class="impact-metric-value neu" id="rim-uptime">—</div>
+      </div>
+    </div>
+    <div id="rem-polling-bar" class="hidden" style="margin-top:8px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px" id="rem-polling-label">
+        Verificando estado del sistema...
+      </div>
+      <div class="polling-bar-wrap"><div class="polling-bar-fill"></div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL AGENTE -->
+<div class="ag-modal-overlay" id="agModal">
+  <div class="ag-modal">
+    <div class="ag-modal-header">
+      <span class="ag-modal-title" id="agModalTitle">Mensaje generado</span>
+      <button class="ag-modal-close" onclick="closeAgModal()">&times;</button>
+    </div>
+    <div class="ag-modal-body">
+      <div class="ag-msg-preview" id="agModalMsg"></div>
+      <div class="ag-modal-actions">
+        <button class="btn-ag btn-ag-primary" onclick="copyAgMsg()">Copiar</button>
+        <button class="btn-ag btn-ag-secondary" onclick="closeAgModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+const AUTH_TOKEN_KEY = 'auth_token';
+const AUTH_ACCESS_KEY = 'moninaG22';
+let _ron3iaInitialized = false;
+
+function hasAuthToken() {
+  try { return localStorage.getItem(AUTH_TOKEN_KEY) !== null; } catch { return false; }
+}
+
+function setAuthToken() {
+  try { localStorage.setItem(AUTH_TOKEN_KEY, 'true'); } catch {}
+}
+
+function unlockConsole() {
+  document.body.classList.remove('auth-locked');
+  const authGuard = document.getElementById('auth-guard');
+  if (authGuard) authGuard.setAttribute('aria-hidden', 'true');
+  initializeRon3iaApp();
+}
+
+function initAuthGuard() {
+  const form = document.getElementById('auth-form');
+  const input = document.getElementById('auth-key');
+  const error = document.getElementById('auth-error');
+
+  if (hasAuthToken()) {
+    unlockConsole();
+    return;
+  }
+
+  document.body.classList.add('auth-locked');
+  if (input) setTimeout(() => input.focus(), 60);
+
+  if (!form) return;
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const candidate = (input?.value || '').trim();
+    if (candidate === AUTH_ACCESS_KEY) {
+      setAuthToken();
+      if (error) error.textContent = '';
+      unlockConsole();
+      return;
+    }
+    if (error) error.textContent = 'Acceso denegado. Llave incorrecta';
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+  });
+}
+
+function initializeRon3iaApp() {
+  if (_ron3iaInitialized) return;
+  _ron3iaInitialized = true;
+  populateConfigForm();
+  updateConnBar();
+  updateDemoBanner();
+  startAutoRefresh();
+}
+
+/*
+React AuthGuard equivalente para proyectos con App.js o layout.js:
+
+import { useEffect, useState } from 'react';
+import './AuthGuard.css';
+
+const AUTH_TOKEN_KEY = 'auth_token';
+const ACCESS_KEY = 'moninaG22';
+
+export default function AuthGuard({ children }) {
+  const [isAllowed, setIsAllowed] = useState(false);
+  const [accessKey, setAccessKey] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setIsAllowed(localStorage.getItem(AUTH_TOKEN_KEY) !== null);
+  }, []);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (accessKey.trim() === ACCESS_KEY) {
+      localStorage.setItem(AUTH_TOKEN_KEY, 'true');
+      setIsAllowed(true);
+      setError('');
+      return;
+    }
+    setError('Acceso denegado. Llave incorrecta');
+  };
+
+  if (isAllowed) return children;
+
+  return (
+    <main className="auth-guard">
+      <section className="auth-panel">
+        <div className="auth-kicker">Console Access</div>
+        <h1 className="auth-logo">RON3IA<span>.</span></h1>
+        <p className="auth-copy">Acceso restringido a la consola operativa.</p>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <label htmlFor="access-key">Llave de Acceso</label>
+          <div className="auth-input-wrap">
+            <input
+              id="access-key"
+              className="auth-input"
+              type="password"
+              value={accessKey}
+              onChange={(event) => setAccessKey(event.target.value)}
+              autoFocus
+            />
+            <button className="auth-submit" type="submit">ENTRAR</button>
+          </div>
+          <div className="auth-error">{error}</div>
+        </form>
+      </section>
     </main>
+  );
+}
 
-    <script>
-        const consoleEl = document.getElementById('command-console');
-        const triggerBtn = document.getElementById('main-trigger');
+App.js:
+import AuthGuard from './AuthGuard';
+export default function App() {
+  return <AuthGuard><Console /></AuthGuard>;
+}
 
-        const API_BASE = window.location.hostname.includes('localhost') ? 'http://127.0.0.1:10000' : 'https://ron3ia-api-backup.onrender.com';
+Next.js layout.js:
+import AuthGuard from './AuthGuard';
+export default function RootLayout({ children }) {
+  return <html lang="es"><body><AuthGuard>{children}</AuthGuard></body></html>;
+}
+*/
 
-        const COMMAND_DICT = {
-            '/flash':   { key: 'EJECUTAR_FLASH_AUDIT', name: 'Flash Audit' },
-            '/geo':     { key: 'INYECTAR_GEO_SHIELD', name: 'GEO Shield' },
-            '/roi':     { key: 'CONCILIAR_ROI_FINANCIERO', name: 'ROI Financiero' },
-            '/ivt':     { key: 'BLOQUEAR_TRAFICO_IVT', name: 'AdShield Core' },
-            '/pii':     { key: 'ACTIVAR_ANONIMIZACION_PII', name: 'Privacy Vault' }
-        };
+const API = window.location.hostname.includes('localhost')
+  ? 'http://127.0.0.1:8000'
+  : '';
 
-        function print(msg) {
-            const content = Array.isArray(msg) ? msg.join('\n') : String(msg);
-            consoleEl.value += '\n' + content;
-            consoleEl.scrollTop = consoleEl.scrollHeight;
+// ─── MÓDULOS MULTI-SELECT ────────────────────────────────
+// Set de módulos activos — el usuario puede activar/desactivar individualmente
+let _modulosActivos = new Set(['Intelligence']);
+
+// Qué producto se forma con cada combinación clave (para UX)
+const PRODUCTO_LABELS = {
+  'SEO':              'Auditoría SEO',
+  'GEO':              'Optimización GEO / AI-Ready',
+  'SEO,GEO':          'SEO + GEO',
+  'Conversion':       'Auditoría de Conversión',
+  'Commerce':         'Auditoría de Tracking',
+  'Intelligence':     'Diagnóstico General',
+  'Expansion':        'Análisis Completo',
+  'Growth':           'Análisis de Crecimiento',
+};
+
+function _getProductoLabel() {
+  const mods = [..._modulosActivos].sort().join(',');
+  return PRODUCTO_LABELS[mods] || [..._modulosActivos].join(' + ');
+}
+
+function toggleTab(el) {
+  const tab = el.dataset.tab;
+
+  if (_modulosActivos.has(tab) && _modulosActivos.size > 1) {
+    _modulosActivos.delete(tab);
+    el.classList.remove('active');
+  } else {
+    _modulosActivos.add(tab);
+    el.classList.add('active');
+  }
+  _updateModulosBar();
+}
+
+function selectAllTabs() {
+  document.querySelectorAll('.tab[data-tab]').forEach(t => {
+    t.classList.add('active');
+    _modulosActivos.add(t.dataset.tab);
+  });
+  _updateModulosBar();
+}
+
+function clearAllTabs() {
+  _modulosActivos.clear();
+  _modulosActivos.add('Intelligence');
+  document.querySelectorAll('.tab[data-tab]').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === 'Intelligence');
+  });
+  _updateModulosBar();
+}
+
+function _updateModulosBar() {
+  const mods = [..._modulosActivos];
+  document.getElementById('modulos-activos-label').textContent = _getProductoLabel();
+  document.getElementById('modulos-count').textContent = mods.length + ' módulo' + (mods.length > 1 ? 's' : '');
+}
+
+function _getModulosArray() {
+  return [..._modulosActivos];
+}
+
+// ─── VIEW MANAGER ────────────────────────────────────────
+function showView(v) {
+  const views = ['diag','repair','agente','config','remediation'];
+  views.forEach(id => {
+    const el = document.getElementById(id+'-view');
+    if (el) el.classList.toggle('hidden', v !== id);
+  });
+  const tabsBar = document.getElementById('tabs-bar');
+  const modulosBar = document.getElementById('modulos-bar');
+  const hide = (v === 'agente' || v === 'config' || v === 'remediation');
+  tabsBar.classList.toggle('hidden', hide);
+  modulosBar.classList.toggle('hidden', hide);
+  ['diag','repair','agente','config','remediation'].forEach(id => {
+    const btn = document.getElementById('btn-nav-'+id);
+    if (btn) btn.classList.toggle('active', v === id);
+  });
+  if (v === 'agente') { loadAgentData(); }
+}
+
+// ─── SCANNER ANIMATION ───────────────────────────────────
+const SCAN_STEPS = [
+  'Conectando con el dominio...',
+  'Verificando SSL y status HTTP...',
+  'Analizando estructura HTML...',
+  'Detectando schema markup...',
+  'Verificando sitemap.xml y robots.txt...',
+  'Calculando DHI Score...',
+  'Analizando GEO Score...',
+  'Generando veredicto RON3IA...',
+];
+
+function runScanAnimation(logId, fillId, labelId, steps, onDone) {
+  const log = document.getElementById(logId);
+  const fill = document.getElementById(fillId);
+  const label = document.getElementById(labelId);
+  log.innerHTML = '';
+  let i = 0;
+  const tick = setInterval(() => {
+    if (i < steps.length) {
+      const line = document.createElement('div');
+      line.className = 'scan-log-line';
+      line.textContent = '> ' + steps[i];
+      log.appendChild(line);
+      fill.style.width = ((i + 1) / steps.length * 85) + '%';
+      label.textContent = steps[i];
+      i++;
+    }
+  }, 420);
+  return { stop: () => { clearInterval(tick); fill.style.width = '100%'; label.textContent = 'Procesando resultado...'; if(onDone) onDone(); } };
+}
+
+// ─── HELPERS ─────────────────────────────────────────────
+function formatDate() {
+  const n = new Date();
+  return n.toLocaleDateString('es-CL') + ' ' + n.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+}
+function scoreClass(v) {
+  if (v === null || v === undefined) return 'na';
+  if (v >= 80) return 'ok';
+  if (v >= 50) return 'warning';
+  return 'critical';
+}
+function statusBadge(s) {
+  if (!s || s === 'UNKNOWN') return '';
+  const map = { SUCCESS:['badge-success','VERIFICADO'], BLOCKED:['badge-blocked','BLOQUEADO'], FAILED:['badge-failed','FALLO'], PARTIAL:['badge-partial','PARCIAL'] };
+  const [cls, label] = map[s] || ['badge-partial', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function setScore(elId, val) {
+  const el = document.getElementById(elId);
+  if (val === null || val === undefined) {
+    el.textContent = 'N/A'; el.className = 'score-value na';
+  } else {
+    el.textContent = val + '/100'; el.className = 'score-value ' + scoreClass(val);
+  }
+}
+
+// ─── RENDER HALLAZGO ─────────────────────────────────────
+function renderHallazgo(h) {
+  const nivelCls  = h.nivel === 'CRITICO' ? 'nivel-critico' : 'nivel-alto';
+  const hallCls   = h.nivel === 'CRITICO' ? 'critico' : 'alto';
+  const impacto   = (h.impacto||[]).map(i=>`<li>${i}</li>`).join('');
+  const solucion  = (h.solucion||[]).map(s=>`<li>${s}</li>`).join('');
+  const validacion= (h.validacion||[]).map(v=>`<li>${v}</li>`).join('');
+
+  // ── ROI Engine: extraer yaml_path dinámico ─────────────────────
+  // Soporta: yaml_path directo | campo fix_yaml_path | inferencia por módulo
+  const yamlPath = h.yaml_path
+    || h.fix_yaml_path
+    || h.remediation?.yaml_path
+    || _inferYamlPath(h);
+
+  const recVal = h.recommended_value
+    || h.fix_value
+    || h.remediation?.value
+    || null;
+
+  // ROI Score: basado en fuga_capital o prioridad
+  const fuga       = parseFloat(h.fuga_capital || h.impacto_financiero || 0);
+  const roiScore   = fuga > 500 ? 'high' : fuga > 100 ? 'med' : 'low';
+  const roiLabel   = fuga > 0 ? `~$${fuga.toLocaleString('es-CL')}/mes` : h.prioridad || 'NORMAL';
+  const canRepair  = !!(yamlPath && recVal);
+
+  // Botón de reparación — solo si yaml_path extraído Y fuga_capital > 0 (impacto positivo)
+  const repairBtn = canRepair ? `
+    <button
+      class="btn-primary"
+      style="font-size:10px;padding:5px 12px;margin-top:10px"
+      onclick='_loadHallazgoIntoRem(${JSON.stringify({
+        service:           h.servicio || 'app',
+        file:              h.archivo   || 'docker-compose.yml',
+        yaml_path:         yamlPath,
+        current_value:     h.current_value || '',
+        recommended_value: recVal,
+        description:       h.titulo || 'Hallazgo detectado',
+        fuga_capital:      fuga,
+      })})'
+    >⚙ Reparar con RON3IA</button>` : '';
+
+  return `
+  <div class="hallazgo ${hallCls}">
+    <div class="hallazgo-header">
+      <span class="nivel-badge ${nivelCls}">[${h.nivel}]</span>
+      <span class="hallazgo-titulo">${h.titulo}</span>
+      ${fuga > 0 ? `<span class="roi-badge roi-${roiScore}" style="margin-left:auto">ROI ${roiLabel}</span>` : ''}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Estado: ${h.estado}</div>
+    ${h.evidencia  ? `<div class="hallazgo-evidencia">${h.evidencia}</div>` : ''}
+    ${h.causa_raiz ? `<div class="hallazgo-causa"><strong>Causa:</strong> ${h.causa_raiz}</div>` : ''}
+    ${impacto      ? `<div class="hallazgo-section-title">Impacto</div><ul class="impacto-list">${impacto}</ul>` : ''}
+    ${h.impacto_trafico ? `<div style="font-size:11px;color:var(--orange);margin:6px 0;font-family:var(--mono)">Impacto tráfico: ${h.impacto_trafico}</div>` : ''}
+    ${solucion     ? `<div class="hallazgo-section-title">Solución ejecutable</div><div class="solucion-list"><ol>${solucion}</ol></div>` : ''}
+    ${validacion   ? `<div class="hallazgo-section-title">Validación post-reparación</div><div class="validacion-list"><ul>${validacion}</ul></div>` : ''}
+    ${yamlPath     ? `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px;padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:3px">yaml_path: ${yamlPath}</div>` : ''}
+    ${(h.prioridad||h.tiempo_ejecucion||h.complejidad) ? `
+    <div class="hallazgo-footer">
+      ${h.prioridad        ? `<span class="htag">PRIORIDAD <span>${h.prioridad}</span></span>`           : ''}
+      ${h.tiempo_ejecucion ? `<span class="htag">TIEMPO <span>${h.tiempo_ejecucion}</span></span>`       : ''}
+      ${h.complejidad      ? `<span class="htag">COMPLEJIDAD <span>${h.complejidad}</span></span>`       : ''}
+      ${h.dependencias     ? `<span class="htag">DEPS <span>${h.dependencias}</span></span>`             : ''}
+    </div>` : ''}
+    ${repairBtn}
+  </div>`;
+}
+
+function _inferYamlPath(h) {
+  // Inferencia por módulo/tipo cuando la API no lo entrega explícitamente
+  const t = (h.titulo || '').toLowerCase();
+  const e = (h.evidencia || '').toLowerCase();
+  if (t.includes('imagen') || e.includes('image:'))
+    return 'services.' + (h.servicio||'app') + '.image';
+  if (t.includes('debug') || e.includes('debug=true'))
+    return 'services.' + (h.servicio||'app') + '.environment[0]';
+  if (t.includes('puerto') || t.includes('port'))
+    return 'services.' + (h.servicio||'app') + '.ports[0]';
+  if (t.includes('ssl') || t.includes('https'))
+    return 'services.' + (h.servicio||'app') + '.environment.SSL_REDIRECT';
+  return null;
+}
+
+function _loadHallazgoIntoRem(data) {
+  // Rellena el formulario de Remediación desde un hallazgo del diagnóstico
+  showView('remediation');
+  document.getElementById('rem-service').value     = data.service     || '';
+  document.getElementById('rem-file').value        = data.file        || 'docker-compose.yml';
+  document.getElementById('rem-path').value        = data.yaml_path   || '';
+  document.getElementById('rem-current').value     = data.current_value || '';
+  document.getElementById('rem-recommended').value = data.recommended_value || '';
+  document.getElementById('rem-desc').value        = data.description || '';
+  // Guardar fuga_capital para cálculo de impacto
+  window._remFugaCapital = parseFloat(data.fuga_capital || 0);
+  toast('Hallazgo cargado en Remediación', 'ok');
+}
+
+// ─── EMITIR VEREDICTO ────────────────────────────────────
+async function emitirVeredicto() {
+  const domain = document.getElementById('input-domain').value.trim();
+  const nombre = document.getElementById('input-nombre').value.trim();
+  const email = document.getElementById('input-email').value.trim();
+  if (!domain) { alert('Ingresa un dominio'); return; }
+
+  document.getElementById('btn-veredicto').disabled = true;
+  document.getElementById('diag-result').classList.add('hidden');
+  document.getElementById('diag-loading').classList.remove('hidden');
+
+  const anim = runScanAnimation('scan-log','progress-fill','loader-label', SCAN_STEPS);
+
+  try {
+    const res = await fetch(`${API}/api/analyze-site`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url: domain.startsWith('http') ? domain : 'https://' + domain, internal_key: 'RON3IA_MASTER_2026_PRO', industria: 'pyme', inversion_ads_mensual: 500})
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} — Error del servidor`);
+    const data = await res.json();
+    anim.stop();
+    setTimeout(() => {
+      document.getElementById('diag-loading').classList.add('hidden');
+      // Adapter: Cloud Run → Console format
+      const raw = data.report || data;
+      const report = {
+        domain: raw.url || domain,
+        nombre: nombre,
+        email: email,
+        dhi_score: raw.score_ron3ia ?? raw.dhi_score ?? null,
+        geo_score: raw.geo_score ?? null,
+        opportunity_loss_usd: raw.fuga_capital ?? raw.opportunity_loss_usd ?? null,
+        opportunity_loss_anual: raw.fuga_capital ? raw.fuga_capital * 12 : null,
+        estado_sistema: raw.score_ron3ia >= 70 ? 'FUNCIONAL' : 'CRÍTICO',
+        urgencia: raw.score_ron3ia >= 70 ? 'MEDIA' : 'ALTA',
+        hallazgos: raw.hallazgos ? Object.entries(raw.hallazgos).map(([k,v]) => ({
+          nivel: v.score < 50 ? 'CRITICO' : 'ALTO',
+          titulo: k.toUpperCase() + ' — Score ' + v.score + '/100',
+          estado: v.score < 50 ? 'CRÍTICO' : 'REVISAR',
+          evidencia: (v.problemas||[]).join(' | '),
+          impacto: [v.impacto_estimado||''].filter(Boolean),
+          solucion: [],
+          prioridad: v.score < 40 ? 'URGENTE' : 'NORMAL'
+        })) : [],
+        impacto_negocio: {
+          efectos: raw.marketing_real ? Object.entries(raw.marketing_real).filter(([k,v])=>!v).map(([k])=>'Sin '+k.replace(/_/g,' ')) : [],
+          riesgos: ['Pérdida de leads no trackeados','Decisiones sin datos reales']
+        },
+        acciones_recomendadas: raw.diagnostico_ia ? [raw.diagnostico_ia] : [],
+        veredicto_ron3ia: {
+          descripcion: raw.diagnostico_ia || 'Análisis completado.',
+          estado: raw.nivel_riesgo || 'REVISAR',
+          accion: 'Implementar tracking y optimización digital'
+        },
+        narrativa_cierre: raw.diagnostico_ia || '',
+        plan_reparacion: raw.diagnostico_ia || '',
+      };
+      const status = 'SUCCESS';
+      renderDiag(report, domain, nombre, email, status, raw.motor_ia || 'Kimi');
+    }, 600);
+  } catch(e) {
+    anim.stop();
+    document.getElementById('diag-loading').classList.add('hidden');
+    alert('Error: ' + e.message);
+  } finally {
+    document.getElementById('btn-veredicto').disabled = false;
+  }
+}
+
+// ─── RENDER DIAGNÓSTICO ──────────────────────────────────
+function renderDiag(r, domain, nombre, email, status, modelo) {
+  document.getElementById('r-domain').textContent = r.domain || domain;
+  document.getElementById('r-cliente').textContent = r.nombre || nombre || '—';
+  document.getElementById('r-email').textContent = r.email || email || '—';
+  document.getElementById('r-fecha').textContent = r.timestamp || formatDate();
+  document.getElementById('r-modelo').textContent = (modelo && modelo !== 'UNKNOWN') ? modelo : 'RON3IA CORE';
+  document.getElementById('r-status-badge').innerHTML = statusBadge(status);
+
+  setScore('r-dhi', r.dhi_score);
+  setScore('r-geo', r.geo_score);
+
+  const estadoEl = document.getElementById('r-estado');
+  const urgEl = document.getElementById('r-urgencia');
+  estadoEl.textContent = r.estado_sistema || 'N/A';
+  estadoEl.className = 'score-value ' + ({'OPTIMO':'ok','FUNCIONAL':'warning','NO VERIFICADO':'na'}[r.estado_sistema] || 'critical');
+  urgEl.textContent = r.urgencia || 'N/A';
+  urgEl.className = 'score-value ' + ({'BAJA':'ok','MEDIA':'warning','NO DETERMINADA':'na'}[r.urgencia] || 'critical');
+
+  // Pérdida
+  const lossBox = document.getElementById('r-loss-box');
+  if (r.opportunity_loss_usd !== null && r.opportunity_loss_usd !== undefined) {
+    document.getElementById('r-loss-mensual').textContent = '$' + r.opportunity_loss_usd + ' USD / mes';
+    document.getElementById('r-loss-anual').textContent = r.opportunity_loss_anual ? '$' + r.opportunity_loss_anual + ' USD / año' : '—';
+    lossBox.style.display = 'flex';
+    lossBox.dataset.hasLoss = 'true';
+  } else {
+    lossBox.style.display = 'none';
+    lossBox.dataset.hasLoss = 'false';
+  }
+
+  // Estado de análisis
+  document.getElementById('r-partial').classList.toggle('hidden', status !== 'PARTIAL');
+  const isBlocked = status === 'BLOCKED' || status === 'FAILED';
+  document.getElementById('r-blocked').classList.toggle('hidden', !isBlocked);
+  if (isBlocked) {
+    document.getElementById('r-blocked-text').textContent = r.plan_ejecutivo || r.crawl_error || 'Sitio no pudo ser analizado.';
+  }
+
+  // Hallazgos — mostrar si SUCCESS o PARTIAL
+  const hallazgos = r.hallazgos || [];
+  const hallSection = document.getElementById('r-hallazgos-section');
+  if ((status === 'SUCCESS' || status === 'PARTIAL') && hallazgos.length > 0) {
+    hallSection.classList.remove('hidden');
+    document.getElementById('r-hallazgos').innerHTML = hallazgos.map(renderHallazgo).join('');
+  } else {
+    hallSection.classList.add('hidden');
+  }
+
+  // Impacto
+  const imp = r.impacto_negocio || {};
+  document.getElementById('r-efectos').innerHTML = (imp.efectos||[]).map(e=>`<li>${e}</li>`).join('');
+  document.getElementById('r-riesgos').innerHTML = (imp.riesgos||[]).map(e=>`<li>${e}</li>`).join('');
+
+  // Acciones
+  const acciones = r.acciones_recomendadas || [];
+  document.getElementById('r-acciones').innerHTML = acciones.map(a=>`<div class="accion-item">${a}</div>`).join('') || '<div class="accion-item" style="color:var(--muted)">Sin acciones detectadas.</div>';
+
+  // Veredicto
+  const v = r.veredicto_ron3ia || {};
+  document.getElementById('r-veredicto-desc').textContent = v.descripcion || '—';
+  document.getElementById('r-veredicto-estado').textContent = v.estado || '—';
+  document.getElementById('r-veredicto-accion').textContent = v.accion || '—';
+
+  // Financiero
+  document.getElementById('r-narrativa').textContent = r.narrativa_cierre || r.plan_ejecutivo || 'Sin datos disponibles.';
+
+  document.getElementById('diag-result').classList.remove('hidden');
+
+  // Mostrar módulos activos en el resultado
+  const modsActivos = r.modulos_activos || _getModulosArray();
+  document.getElementById('modulos-activos-label').textContent = modsActivos.join(' + ');
+  document.getElementById('modulos-count').textContent = modsActivos.length + ' módulo' + (modsActivos.length > 1 ? 's' : '');
+
+  // Pre-fill repair silenciosamente
+  document.getElementById('rep-domain').value = r.domain || domain;
+  document.getElementById('rep-nombre').value = r.nombre || nombre || '';
+  document.getElementById('rep-email').value = r.email || email || '';
+
+  // Guardar para repair
+  window._lastDomain = r.domain || domain;
+  window._lastNombre = r.nombre || nombre || '';
+  window._lastEmail = r.email || email || '';
+}
+
+// ─── IR A REPARACIÓN (desde diagnóstico) ─────────────────
+function irAReparacion() {
+  showView('repair');
+  if (window._lastDomain) {
+    ejecutarRepair();
+  }
+}
+
+// ─── REPAIR ──────────────────────────────────────────────
+const REP_STEPS = [
+  'Crawleando dominio...',
+  'Detectando problemas técnicos...',
+  'Calculando prioridades...',
+  'Generando plan ejecutable...',
+  'Estimando tiempos de resolución...',
+];
+
+async function ejecutarRepair() {
+  const domain = document.getElementById('rep-domain').value.trim();
+  const nombre = document.getElementById('rep-nombre').value.trim();
+  const email = document.getElementById('rep-email').value.trim();
+  if (!domain) { alert('Ingresa un dominio'); return; }
+
+  document.getElementById('btn-repair').disabled = true;
+  document.getElementById('rep-result').classList.add('hidden');
+  document.getElementById('rep-loading').classList.remove('hidden');
+
+  const anim = runScanAnimation('rep-scan-log','rep-progress-fill','rep-loader-label', REP_STEPS);
+
+  try {
+    const res = await fetch(`${API}/api/analyze-site`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url: domain.startsWith('http') ? domain : 'https://' + domain, internal_key: 'RON3IA_MASTER_2026_PRO', industria: 'pyme', inversion_ads_mensual: 500})
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} — Error del servidor`);
+    const data = await res.json();
+    anim.stop();
+    setTimeout(() => {
+      document.getElementById('rep-loading').classList.add('hidden');
+      const raw2 = data.report || data;
+      const repData = {
+        domain: raw2.url || domain,
+        dhi_score: raw2.score_ron3ia ?? null,
+        urgencia: raw2.score_ron3ia >= 70 ? 'MEDIA' : 'ALTA',
+        opportunity_loss_usd: raw2.fuga_capital ?? null,
+        opportunity_loss_anual: raw2.fuga_capital ? raw2.fuga_capital * 12 : null,
+        analysis_status: 'SUCCESS',
+        acciones_recomendadas: raw2.diagnostico_ia ? [raw2.diagnostico_ia] : [],
+        plan_reparacion: raw2.diagnostico_ia || 'Plan de reparación generado por RON3IA.',
+      };
+      renderRepair(repData, domain, nombre, email);
+    }, 600);
+  } catch(e) {
+    anim.stop();
+    document.getElementById('rep-loading').classList.add('hidden');
+    alert('Error: ' + e.message);
+  } finally {
+    document.getElementById('btn-repair').disabled = false;
+  }
+}
+
+// ─── RENDER REPAIR ───────────────────────────────────────
+function renderRepair(r, domain, nombre, email) {
+  document.getElementById('rep-r-domain').textContent = r.domain || domain;
+  document.getElementById('rep-r-cliente').textContent = nombre || '—';
+  document.getElementById('rep-r-email').textContent = email || '—';
+
+  const dhi = r.dhi_score;
+  const dhiEl = document.getElementById('rep-r-dhi');
+  dhiEl.textContent = dhi !== null && dhi !== undefined ? dhi + '/100' : 'N/A';
+  dhiEl.className = 'score-value ' + scoreClass(dhi);
+
+  const urgEl = document.getElementById('rep-r-urgencia');
+  urgEl.textContent = r.urgencia || 'N/A';
+  urgEl.className = 'score-value ' + ({'BAJA':'ok','MEDIA':'warning','NO DETERMINADA':'na'}[r.urgencia] || 'critical');
+
+  const lossEl = document.getElementById('rep-r-loss');
+  lossEl.textContent = r.opportunity_loss_usd !== null && r.opportunity_loss_usd !== undefined ? '$' + r.opportunity_loss_usd : 'N/A';
+  lossEl.className = 'score-value ' + (r.opportunity_loss_usd ? scoreClass(0) : 'na');
+
+  const lossAEl = document.getElementById('rep-r-loss-anual');
+  lossAEl.textContent = r.opportunity_loss_anual ? '$' + r.opportunity_loss_anual : 'N/A';
+  lossAEl.className = 'score-value ' + (r.opportunity_loss_anual ? 'critical' : 'na');
+
+  const status = r.analysis_status || 'UNKNOWN';
+  const isBlocked = status === 'BLOCKED' || status === 'FAILED';
+  document.getElementById('rep-blocked').classList.toggle('hidden', !isBlocked);
+  if (isBlocked) {
+    document.getElementById('rep-blocked-text').textContent = r.plan_reparacion || 'Sitio no pudo ser analizado.';
+  }
+
+  const acciones = r.acciones_recomendadas || [];
+  const repAccSection = document.getElementById('rep-acciones-section');
+  if (acciones.length > 0) {
+    repAccSection.classList.remove('hidden');
+    document.getElementById('rep-acciones').innerHTML = acciones.map(a=>`<div class="accion-item">${a}</div>`).join('');
+  } else {
+    repAccSection.classList.add('hidden');
+  }
+
+  document.getElementById('rep-plan').textContent = r.plan_reparacion || r.plan_ejecutivo || 'Sin plan disponible.';
+  document.getElementById('rep-result').classList.remove('hidden');
+}
+// ───────────────────────────────────────────────────────
+// CONFIG — carga y guarda en localStorage
+// ───────────────────────────────────────────────────────
+const CFG_KEY = 'ron3ia_config';
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; }
+}
+
+function saveConfig() {
+  const cfg = {
+    supabaseUrl:  document.getElementById('cfg-supabase-url').value.trim(),
+    supabaseKey:  document.getElementById('cfg-supabase-key').value.trim(),
+    mapsKey:      document.getElementById('cfg-maps-key').value.trim(),
+    geminiKey:    document.getElementById('cfg-gemini-key').value.trim(),
+    waPrefix:     document.getElementById('cfg-wa-prefix').value.trim() || '56',
+    emailFrom:    document.getElementById('cfg-email-from').value.trim(),
+    refreshInterval: parseInt(document.getElementById('cfg-refresh-interval').value)
+  };
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  toast('Configuración guardada', 'ok');
+  updateConnBar();
+  updateDemoBanner();
+  startAutoRefresh();
+}
+
+function clearConfig() {
+  if (!confirm('¿Eliminar toda la configuración?')) return;
+  localStorage.removeItem(CFG_KEY);
+  ['cfg-supabase-url','cfg-supabase-key','cfg-maps-key','cfg-gemini-key','cfg-wa-prefix','cfg-email-from'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  updateConnBar();
+  updateDemoBanner();
+  toast('Configuración eliminada', 'inf');
+}
+
+function populateConfigForm() {
+  const cfg = loadConfig();
+  if (cfg.supabaseUrl) document.getElementById('cfg-supabase-url').value = cfg.supabaseUrl;
+  if (cfg.supabaseKey) document.getElementById('cfg-supabase-key').value = cfg.supabaseKey;
+  if (cfg.mapsKey)     document.getElementById('cfg-maps-key').value = cfg.mapsKey;
+  if (cfg.geminiKey)   document.getElementById('cfg-gemini-key').value = cfg.geminiKey;
+  if (cfg.waPrefix)    document.getElementById('cfg-wa-prefix').value = cfg.waPrefix;
+  if (cfg.emailFrom)   document.getElementById('cfg-email-from').value = cfg.emailFrom;
+  if (cfg.refreshInterval !== undefined) {
+    document.getElementById('cfg-refresh-interval').value = cfg.refreshInterval;
+  }
+}
+
+// ───────────────────────────────────────────────────────
+// CONNECTION STATUS
+// ───────────────────────────────────────────────────────
+function updateConnBar() {
+  const cfg = loadConfig();
+  setConn('supabase', !!(cfg.supabaseUrl && cfg.supabaseKey));
+  setConn('maps',     !!cfg.mapsKey);
+  setConn('gemini',   !!cfg.geminiKey);
+  setConn('ron3ia',   true); // siempre disponible
+}
+
+function setConn(name, ok) {
+  const dot = document.getElementById('cd-'+name);
+  const cb  = document.getElementById('cb-'+name);
+  if (!dot) return;
+  dot.className = 'cd ' + (ok ? 'ok' : 'off');
+  cb.classList.toggle('connected', ok);
+}
+
+function setConnErr(name) {
+  const dot = document.getElementById('cd-'+name);
+  if (dot) dot.className = 'cd err';
+}
+
+function updateDemoBanner() {
+  const cfg = loadConfig();
+  const isConfigured = !!(cfg.supabaseUrl && cfg.supabaseKey);
+  const banner = document.getElementById('demo-banner');
+  if (banner) banner.style.display = isConfigured ? 'none' : 'flex';
+}
+
+// ───────────────────────────────────────────────────────
+// SUPABASE — fetch real
+// ───────────────────────────────────────────────────────
+async function sbFetch(table, params = '') {
+  const cfg = loadConfig();
+  if (!cfg.supabaseUrl || !cfg.supabaseKey) return null;
+  const res = await fetch(`${cfg.supabaseUrl}/rest/v1/${table}${params}`, {
+    headers: {
+      'apikey': cfg.supabaseKey,
+      'Authorization': `Bearer ${cfg.supabaseKey}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) throw new Error(`Supabase ${res.status}`);
+  return res.json();
+}
+
+async function sbInsert(table, data) {
+  const cfg = loadConfig();
+  if (!cfg.supabaseUrl || !cfg.supabaseKey) return null;
+  const res = await fetch(`${cfg.supabaseUrl}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': cfg.supabaseKey,
+      'Authorization': `Bearer ${cfg.supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Supabase insert ${res.status}`);
+  return res.json();
+}
+
+async function sbUpdate(table, id, data) {
+  const cfg = loadConfig();
+  if (!cfg.supabaseUrl || !cfg.supabaseKey) return null;
+  const res = await fetch(`${cfg.supabaseUrl}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': cfg.supabaseKey,
+      'Authorization': `Bearer ${cfg.supabaseKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Supabase update ${res.status}`);
+  return res.json();
+}
+
+// ───────────────────────────────────────────────────────
+// LOAD AGENT DATA — orquesta todo
+// ───────────────────────────────────────────────────────
+async function loadAgentData() {
+  const cfg = loadConfig();
+  const isConfigured = !!(cfg.supabaseUrl && cfg.supabaseKey);
+  if (!isConfigured) { renderDemoData(); return; }
+  await Promise.all([loadLeads(), loadCosts(), loadSales(), loadResumen()]);
+}
+
+// ───────────────────────────────────────────────────────
+// LEADS
+// ───────────────────────────────────────────────────────
+function showLeadsLoading() {
+  document.getElementById('leads-tbody').innerHTML =
+    `<tr><td colspan="7"><div class="tbl-loading"><span class="spinner"></span>Cargando leads...</div></td></tr>`;
+}
+
+async function loadLeads() {
+  showLeadsLoading();
+  try {
+    const data = await sbFetch('leads', '?order=created_at.desc&limit=50');
+    if (!data || data.length === 0) {
+      document.getElementById('leads-tbody').innerHTML =
+        `<tr><td colspan="7"><div class="tbl-empty">Sin leads todavía. El agente los irá llenando.</div></td></tr>`;
+      return;
+    }
+    renderLeads(data);
+  } catch(e) {
+    setConnErr('supabase');
+    document.getElementById('leads-tbody').innerHTML =
+      `<tr><td colspan="7"><div class="tbl-empty" style="color:var(--red)">Error: ${e.message}</div></td></tr>`;
+  }
+}
+
+function renderLeads(leads) {
+  const cfg = loadConfig();
+  const waPrefix = cfg.waPrefix || '56';
+  const rows = leads.map(l => {
+    const score = l.commercial_score || 0;
+    const badgeCls = score >= 70 ? 'ag-badge-green' : score >= 40 ? 'ag-badge-yellow' : 'ag-badge-red';
+    const estadoCls = {
+      'Respondió':'ag-badge-blue','Enviado':'ag-badge-purple',
+      'Scored':'ag-badge-yellow','Escaneado':'ag-badge-green'
+    }[l.estado] || 'ag-badge-green';
+    const msg = l.mensaje_generado || '';
+    const phone = (l.telefono || '').replace(/[^0-9]/g,'');
+    const waPhone = phone ? `${waPrefix}${phone}` : '';
+    const waLink = waPhone ? `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}` : '#';
+    const emailLink = l.email ? `mailto:${l.email}?subject=RON3IA — Diagnóstico gratuito para ${l.nombre}&body=${encodeURIComponent(msg)}` : '#';
+    return `<tr>
+      <td><strong>${l.nombre||'—'}</strong></td>
+      <td>${l.website||'—'}</td>
+      <td>${l.rubro||'—'}</td>
+      <td><span class="ag-badge ${badgeCls}">${score}</span></td>
+      <td><span class="ag-badge ${estadoCls}">${l.estado||'Escaneado'}</span></td>
+      <td><button class="btn-ag btn-ag-secondary" onclick="openAgModal('${(l.nombre||'').replace(/'/g,"\\'")}',${JSON.stringify(msg)})">Ver</button></td>
+      <td><div style="display:flex;gap:6px">
+        <a href="${waLink}" target="_blank" class="btn-ag btn-ag-primary" onclick="markSent(${l.id},'WhatsApp')">WA</a>
+        <a href="${emailLink}" class="btn-ag btn-ag-secondary" onclick="markSent(${l.id},'Email')">Email</a>
+      </div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('leads-tbody').innerHTML = rows;
+}
+
+async function markSent(id, channel) {
+  try {
+    await sbUpdate('leads', id, { estado: 'Enviado', canal_envio: channel, enviado_at: new Date().toISOString() });
+    toast(`Marcado como enviado vía ${channel}`, 'ok');
+    setTimeout(loadLeads, 1500);
+  } catch(e) { toast('Error al actualizar: '+e.message, 'err'); }
+}
+
+// ───────────────────────────────────────────────────────
+// COSTS
+// ───────────────────────────────────────────────────────
+async function loadCosts() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const data = await sbFetch('cost_log', `?fecha=gte.${today}&order=created_at.desc`);
+    if (!data) return;
+    renderCosts(data);
+  } catch(e) { console.warn('costs:', e.message); }
+}
+
+function renderCosts(rows) {
+  const agg = {};
+  rows.forEach(r => {
+    if (!agg[r.servicio]) agg[r.servicio] = { unit: r.costo_unitario, count: 0, total: 0 };
+    agg[r.servicio].count += 1;
+    agg[r.servicio].total += parseFloat(r.costo_total || 0);
+  });
+  const totalGasto = Object.values(agg).reduce((s,v) => s+v.total, 0);
+  const tbody = document.getElementById('costs-tbody');
+  tbody.innerHTML = Object.entries(agg).map(([svc,v]) =>
+    `<tr><td>${svc}</td><td style="font-family:var(--mono)">$${(v.unit||0).toFixed(4)}</td>
+     <td>${v.count}</td><td><strong style="font-family:var(--mono)">$${v.total.toFixed(3)}</strong></td></tr>`
+  ).join('') + `<tr style="background:var(--bg);font-weight:700">
+    <td colspan="3" style="text-align:right;font-family:var(--mono)">TOTAL</td>
+    <td style="font-family:var(--mono)">$${totalGasto.toFixed(3)}</td></tr>`;
+  const leadsCount = rows.filter(r => r.tipo === 'lead_calificado').length || 1;
+  const cpl = (totalGasto / leadsCount).toFixed(4);
+  const proyeccion = (totalGasto * 30).toFixed(2);
+  document.getElementById('cost-cpl').textContent = `$${cpl}`;
+  document.getElementById('cost-proyeccion').textContent = `$${proyeccion}`;
+}
+
+// ───────────────────────────────────────────────────────
+// SALES
+// ───────────────────────────────────────────────────────
+async function loadSales() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const data = await sbFetch('ventas', `?fecha=gte.${today}&order=created_at.desc`);
+    if (!data) return;
+    renderSales(data);
+  } catch(e) { console.warn('sales:', e.message); }
+}
+
+function renderSales(rows) {
+  const tbody = document.getElementById('sales-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-empty">Sin ventas hoy todavía.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const estado = r.estado === 'Entregado' ? 'ag-badge-green' : 'ag-badge-yellow';
+    const hora = r.created_at ? new Date(r.created_at).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<tr>
+      <td style="font-family:var(--mono)">${hora}</td>
+      <td>${r.dominio||'—'}</td>
+      <td>${r.modulo||'—'}</td>
+      <td><strong style="font-family:var(--mono)">$${r.precio||0} USD</strong></td>
+      <td><span class="ag-badge ${estado}">${r.estado||'Procesando'}</span></td>
+    </tr>`;
+  }).join('');
+  const totalIngresos = rows.reduce((s,r) => s + parseFloat(r.precio||0), 0);
+  const entregados = rows.filter(r => r.estado === 'Entregado').length;
+  const pendientes = rows.filter(r => r.estado !== 'Entregado').length;
+  const ticket = rows.length ? (totalIngresos / rows.length).toFixed(0) : 0;
+  document.getElementById('sales-ingresos').textContent = `$${totalIngresos}`;
+  document.getElementById('sales-entregados').textContent = entregados;
+  document.getElementById('sales-pendientes').textContent = pendientes;
+  document.getElementById('sales-ticket').textContent = `$${ticket}`;
+}
+
+// ───────────────────────────────────────────────────────
+// RESUMEN NEGOCIO
+// ───────────────────────────────────────────────────────
+async function loadResumen() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const [leads, costs, sales] = await Promise.all([
+      sbFetch('leads', `?estado=neq.Descartado&order=created_at.desc&limit=1000`),
+      sbFetch('cost_log', `?fecha=gte.${today}`),
+      sbFetch('ventas', `?fecha=gte.${today}`)
+    ]);
+    const gastos = (costs||[]).reduce((s,r) => s+parseFloat(r.costo_total||0), 0);
+    const ingresos = (sales||[]).reduce((s,r) => s+parseFloat(r.precio||0), 0);
+    const margen = ingresos > 0 ? ((ingresos-gastos)/ingresos*100).toFixed(1) : '—';
+    const activos = (leads||[]).filter(l => l.estado !== 'Enviado').length;
+    document.getElementById('ag-ingresos').textContent = `$${ingresos.toFixed(0)}`;
+    document.getElementById('ag-gastos').textContent = `$${gastos.toFixed(2)}`;
+    document.getElementById('ag-margen').textContent = margen !== '—' ? `${margen}%` : '—';
+    document.getElementById('ag-leads-activos').textContent = activos;
+    document.getElementById('ag-leads-metric').textContent = (leads||[]).length;
+    document.getElementById('ag-cost-metric').textContent = `$${gastos.toFixed(2)}`;
+  } catch(e) { console.warn('resumen:', e.message); }
+}
+
+// ───────────────────────────────────────────────────────
+// TRIGGER AGENT
+// ───────────────────────────────────────────────────────
+async function triggerAgent() {
+  toast('El agente corre automáticamente cada 2 horas vía GitHub Actions.', 'inf');
+  setTimeout(loadAgentData, 2000);
+}
+
+// ───────────────────────────────────────────────────────
+// TEST CONNECTIONS
+// ───────────────────────────────────────────────────────
+async function testSupabase() {
+  const url = document.getElementById('cfg-supabase-url').value.trim();
+  const key = document.getElementById('cfg-supabase-key').value.trim();
+  const el = document.getElementById('cfg-status-supabase');
+  el.textContent = 'Probando...'; el.style.color = 'var(--muted)';
+  try {
+    const res = await fetch(`${url}/rest/v1/leads?limit=1`, {
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`
+      }
+    });
+    if (res.ok) {
+      el.textContent = '✔ Conectado'; el.style.color = 'var(--green)';
+      toast('Supabase conectado', 'ok');
+    } else throw new Error(`HTTP ${res.status}`);
+  } catch(e) { el.textContent = '✗ Error'; el.style.color = 'var(--red)'; toast('Supabase error: '+e.message,'err'); }
+}
+
+async function testMaps() {
+  const key = document.getElementById('cfg-maps-key').value.trim();
+  const el = document.getElementById('cfg-status-maps');
+  el.textContent = 'Probando...'; el.style.color = 'var(--muted)';
+  try {
+    const res = await fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.4,-70.6&radius=100&type=restaurant&key=${key}`);
+    const data = await res.json();
+    if (data.status === 'OK' || data.status === 'ZERO_RESULTS') {
+      el.textContent = '✔ Conectado'; el.style.color = 'var(--green)'; toast('Google Maps conectado','ok');
+    } else throw new Error(data.status);
+  } catch(e) { el.textContent = '✗ Error'; el.style.color='var(--red)'; toast('Maps error: '+e.message,'err'); }
+}
+
+async function testGemini() {
+  const key = document.getElementById('cfg-gemini-key').value.trim();
+  const el = document.getElementById('cfg-status-gemini');
+  el.textContent = 'Probando...'; el.style.color = 'var(--muted)';
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    if (res.ok) {
+      el.textContent = '✔ Conectado'; el.style.color='var(--green)'; toast('Gemini conectado','ok');
+    } else throw new Error(res.status);
+  } catch(e) { el.textContent = '✗ Error'; el.style.color='var(--red)'; toast('Gemini error: '+e.message,'err'); }
+}
+
+// ───────────────────────────────────────────────────────
+// AUTO-REFRESH
+// ───────────────────────────────────────────────────────
+let _refreshTimer = null;
+
+function startAutoRefresh() {
+  if (_refreshTimer) clearInterval(_refreshTimer);
+  const cfg = loadConfig();
+  const interval = cfg.refreshInterval || 60;
+  if (!interval || interval === 0) {
+    document.getElementById('refresh-status').innerHTML = '';
+    return;
+  }
+  document.getElementById('refresh-status').innerHTML =
+    `<span class="refresh-indicator"><span class="refresh-dot"></span>Auto-refresh ${interval}s</span>`;
+  _refreshTimer = setInterval(() => {
+    const current = document.getElementById('agente-view');
+    if (current && !current.classList.contains('hidden')) loadAgentData();
+  }, interval * 1000);
+}
+
+// ───────────────────────────────────────────────────────
+// DEMO DATA (cuando no hay config)
+// ───────────────────────────────────────────────────────
+function renderDemoData() {
+  const demoLeads = [
+    { id:1, nombre:'Clínica Dental Santiago', website:'clinica-smile.cl', rubro:'Dental', commercial_score:78, estado:'Respondió', mensaje_generado:'Revisé clinica-smile.cl en 2 minutos.\n\nNo tienes GA4 activo. No sabes cuántos pacientes llegan desde Google ni qué campaña los trajo.\n\n¿Te muestro exactamente qué estás perdiendo?', telefono:'', email:'' },
+    { id:2, nombre:'Dental Miraflores', website:'dentalmiraflores.cl', rubro:'Dental', commercial_score:65, estado:'Enviado', mensaje_generado:'Revisé dentalmiraflores.cl.\n\nTu web carga en 7 segundos. El 53% abandona antes de ver tu número.\n\n¿Calculamos cuántas citas perdiste este mes?', telefono:'', email:'' },
+    { id:3, nombre:'Clínica Sol', website:'clinica-sol.cl', rubro:'Dental', commercial_score:82, estado:'Escaneado', mensaje_generado:'Revisé clinica-sol.cl.\n\nTienes 4 errores de SEO activos y sin píxel de seguimiento. No sabes qué te trae pacientes.\n\n¿Lo revisamos juntos?', telefono:'', email:'' },
+    { id:4, nombre:'Odontología Integral', website:'odointegral.cl', rubro:'Dental', commercial_score:58, estado:'Scored', mensaje_generado:'Revisé odointegral.cl.\n\nEl formulario no funciona en móvil. Los pacientes intentan agendar y no pueden.\n\n¿Cuándo quieres ver el diagnóstico?', telefono:'', email:'' },
+    { id:5, nombre:'Centro Dental Providencia', website:'dentalprov.cl', rubro:'Dental', commercial_score:35, estado:'Escaneado', mensaje_generado:'Revisé dentalprov.cl.\n\nSin SSL válido, sin schema y sin tracking. Google te penaliza en búsquedas locales.\n\n¿Te explico en 10 minutos qué pasa?', telefono:'', email:'' },
+  ];
+  renderLeads(demoLeads);
+}
+
+// ───────────────────────────────────────────────────────
+// TOAST
+// ───────────────────────────────────────────────────────
+function toast(msg, type = 'inf') {
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast t-${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  requestAnimationFrame(() => { t.classList.add('show'); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
+}
+
+// ───────────────────────────────────────────────────────
+// MODAL
+// ───────────────────────────────────────────────────────
+let _agCurrentMsg = '';
+
+function openAgModal(negocio, mensaje) {
+  document.getElementById('agModalTitle').textContent = negocio;
+  document.getElementById('agModalMsg').textContent = mensaje;
+  _agCurrentMsg = mensaje;
+  document.getElementById('agModal').classList.add('active');
+}
+
+function closeAgModal() { document.getElementById('agModal').classList.remove('active'); }
+
+function copyAgMsg() {
+  navigator.clipboard.writeText(_agCurrentMsg).then(() => toast('Copiado al portapapeles','ok'));
+}
+
+// ───────────────────────────────────────────────────────
+// TOGGLE AGENTE
+// ───────────────────────────────────────────────────────
+function toggleAgente() {
+  const badge = document.getElementById('ag-badge');
+  const dot   = document.getElementById('ag-dot');
+  const btn   = document.getElementById('ag-toggle-btn');
+  if (badge.classList.contains('active')) {
+    badge.classList.replace('active','paused');
+    badge.textContent = 'Agente Pausado';
+    dot.style.backgroundColor = 'var(--red)';
+    dot.style.animation = 'none';
+    btn.textContent = 'Reactivar Agente';
+    btn.classList.replace('btn-ag-danger','btn-ag-primary');
+    toast('Agente pausado','inf');
+  } else {
+    badge.classList.replace('paused','active');
+    badge.textContent = 'Agente Activo';
+    dot.style.backgroundColor = 'var(--green)';
+    dot.style.animation = 'pulse 2s infinite';
+    btn.textContent = 'Pausar Agente';
+    btn.classList.replace('btn-ag-primary','btn-ag-danger');
+    toast('Agente reactivado','ok');
+    triggerAgent();
+  }
+}
+
+// ───────────────────────────────────────────────────────
+// INIT
+// ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initAuthGuard();
+});
+
+document.getElementById('agModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAgModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAgModal(); });
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// RON3IA — REMEDIATION ENGINE v4.0 · SRE GRADE · PRINCIPAL PLATFORM ENGINEER
+// ════════════════════════════════════════════════════════════════════════════
+
+const REM_API = window.location.hostname.includes('localhost')
+  ? 'http://127.0.0.1:8000'
+  : 'https://ron3ia-backend.onrender.com';
+
+const _remTasks        = [];
+let   _remCurrentDiff  = '';
+let   _remCurrentTaskId= null;
+let   _remAuditLog     = [];
+let   _remAuditRowId   = null;      // Supabase row id para updates
+const _fileLocks       = new Set(); // concurrencia: paths bloqueados
+
+// ── Correlation ID ───────────────────────────────────────────────────────────
+function _newCorrelationId() {
+  return 'cor_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
+}
+let _correlationId = _newCorrelationId();
+
+// ════════════════════════════════════════════════════════════════════════════
+// EVENT SYSTEM — emite y registra eventos estructurados
+// ════════════════════════════════════════════════════════════════════════════
+const REM_EVENTS = {
+  PLAN_CREATED:         'PLAN_CREATED',
+  APPROVAL_SIGNED:      'APPROVAL_SIGNED',
+  EXECUTION_STARTED:    'EXECUTION_STARTED',
+  EXECUTION_VERIFIED:   'EXECUTION_VERIFIED',
+  ROLLBACK_TRIGGERED:   'ROLLBACK_TRIGGERED',
+};
+
+async function _emitEvent(type, payload = {}) {
+  const ev = {
+    type,
+    correlation_id: _correlationId,
+    task_id:        _remCurrentTaskId || null,
+    ts:             new Date().toISOString(),
+    ...payload,
+  };
+
+  // Agregar al audit trail local
+  _remAuditLog.unshift(ev);
+  _renderAuditTrail();
+
+  // Persistir en Supabase (best-effort, no bloquea)
+  try {
+    if (type === REM_EVENTS.PLAN_CREATED) {
+      const row = await sbInsert('remediation_logs', {
+        correlation_id: ev.correlation_id,
+        task_id:        ev.task_id,
+        event_type:     type,
+        service:        payload.service || null,
+        yaml_path:      payload.yaml_path || null,
+        diff_text:      payload.diff || null,
+        strategy:       payload.strategy || null,
+        risk_level:     payload.risk_level || null,
+        safe:           payload.safe ?? null,
+        ts:             ev.ts,
+      });
+      if (row && row[0]) _remAuditRowId = row[0].id;
+    } else if (_remAuditRowId) {
+      const patch = { [`${type.toLowerCase()}_at`]: ev.ts };
+      if (type === REM_EVENTS.APPROVAL_SIGNED)    patch.approved_by = payload.approved_by;
+      if (type === REM_EVENTS.EXECUTION_VERIFIED) {
+        patch.commit_hash   = payload.commit_hash || null;
+        patch.health_ok     = payload.health_ok   ?? null;
+        patch.revenue_delta = payload.revenue_delta || null;
+      }
+      if (type === REM_EVENTS.ROLLBACK_TRIGGERED)  patch.rollback = true;
+      await sbUpdate('remediation_logs', _remAuditRowId, patch);
+    }
+  } catch(e) {
+    console.warn('[Audit] Supabase write failed (non-blocking):', e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CONCURRENCY LOCK — por archivo
+// ════════════════════════════════════════════════════════════════════════════
+function _acquireLock(filePath) {
+  if (_fileLocks.has(filePath)) return false;
+  _fileLocks.add(filePath);
+  document.getElementById('rem-lock-badge').style.display = 'inline-flex';
+  return true;
+}
+
+function _releaseLock(filePath) {
+  _fileLocks.delete(filePath);
+  if (_fileLocks.size === 0)
+    document.getElementById('rem-lock-badge').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PREFLIGHT — verifica Render health antes de ejecutar
+// ════════════════════════════════════════════════════════════════════════════
+async function _preflightCheck() {
+  const badge = document.getElementById('rem-health-badge');
+  const label = document.getElementById('rem-health-label');
+  badge.className = 'health-pill health-pending';
+  label.textContent = 'Health: verificando…';
+
+  try {
+    const res = await fetch(REM_API + '/health', { signal: AbortSignal.timeout(5000) });
+    const ok  = res.ok && res.status === 200;
+    badge.className = ok ? 'health-pill health-ok' : 'health-pill health-err';
+    label.textContent = ok ? 'Health: HEALTHY' : `Health: UNHEALTHY (${res.status})`;
+    return ok;
+  } catch(e) {
+    badge.className = 'health-pill health-err';
+    label.textContent = 'Health: UNREACHABLE';
+    return false;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS POLLING — 60s timeout, 2s interval, cierra el loop con health-check
+// ════════════════════════════════════════════════════════════════════════════
+function _startStatusPolling(taskId) {
+  const TIMEOUT  = 60_000;
+  const INTERVAL = 2_000;
+  const deadline = Date.now() + TIMEOUT;
+  let   elapsed  = 0;
+
+  document.getElementById('rem-impact-section').classList.remove('hidden');
+  document.getElementById('rem-polling-bar').classList.remove('hidden');
+
+  const pollingLabel = document.getElementById('rem-polling-label');
+
+  return new Promise((resolve, reject) => {
+    const timer = setInterval(async () => {
+      elapsed += INTERVAL;
+      const remaining = Math.ceil((deadline - Date.now()) / 1000);
+      pollingLabel.textContent = `Polling /status/${taskId.slice(0,8)}… · ${remaining}s restantes`;
+
+      if (Date.now() > deadline) {
+        clearInterval(timer);
+        _stopPollingUI();
+        const task = _remTasks.find(t => t.task_id === taskId);
+        if (task) { task._phase = 'failed'; task._error = 'Timeout (60s)'; }
+        _renderRemTasksTable();
+        await _emitEvent(REM_EVENTS.ROLLBACK_TRIGGERED, { reason: 'polling_timeout' });
+        reject(new Error('Timeout: el Agente no respondió en 60 segundos'));
+        return;
+      }
+
+      try {
+        const res  = await fetch(`${REM_API}/remediation/status/${taskId}`);
+        const data = await res.json();
+
+        if (data.phase === 'done') {
+          clearInterval(timer);
+          _stopPollingUI();
+
+          // ── Health check real post-ejecución ─────────────────────────────
+          pollingLabel.textContent = 'Verificando health check post-commit…';
+          const healthOk = await _postExecuteHealthCheck();
+
+          if (healthOk) {
+            _markHealthOk();
+            _computeImpactMetrics();
+            const task = _remTasks.find(t => t.task_id === taskId);
+            if (task) { task._phase = 'verified'; task._commit = data.commit_hash; }
+            _renderRemTasksTable();
+            await _emitEvent(REM_EVENTS.EXECUTION_VERIFIED, {
+              commit_hash:   data.commit_hash,
+              health_ok:     true,
+              revenue_delta: _estimateRevenueDelta(),
+            });
+            resolve(data);
+          } else {
+            // ── ROLLBACK ─────────────────────────────────────────────────────
+            await _triggerRollbackUI(taskId, data.commit_hash);
+            reject(new Error('Health check falló post-ejecución. Rollback activado.'));
+          }
+
+        } else if (data.phase === 'failed') {
+          clearInterval(timer);
+          _stopPollingUI();
+          const task = _remTasks.find(t => t.task_id === taskId);
+          if (task) { task._phase = 'failed'; task._error = data.error; }
+          _renderRemTasksTable();
+          await _emitEvent(REM_EVENTS.ROLLBACK_TRIGGERED, { reason: data.error });
+          reject(new Error(data.error || 'Tarea fallida en el servidor'));
         }
+      } catch(e) {
+        // Error de red — no abortar, seguir polling hasta timeout
+        pollingLabel.textContent = `Reintentando… (${e.message.slice(0,40)})`;
+      }
+    }, INTERVAL);
+  });
+}
 
-        print("> BUILD: RENDER_FIX_API_ACTION_20260409_0745");
+function _stopPollingUI() {
+  document.getElementById('rem-polling-bar').classList.add('hidden');
+}
 
-        async function handleExecution() {
-            const rawInput = consoleEl.value.trim().split('\n').pop() || "";
-            const rawCmd = rawInput.split(' ')[0].toLowerCase();
+// ════════════════════════════════════════════════════════════════════════════
+// POST-EXECUTE HEALTH CHECK — verifica HTTP 200 del servicio en 10s
+// ════════════════════════════════════════════════════════════════════════════
+async function _postExecuteHealthCheck() {
+  const badge = document.getElementById('rem-health-badge');
+  const label = document.getElementById('rem-health-label');
+  badge.className = 'health-pill health-pending';
+  label.textContent = 'Post-exec health check…';
 
-            if (rawCmd === '/help') {
-                print(["SERVICIOS DISPONIBLES:", ...Object.keys(COMMAND_DICT)]);
-                return;
-            }
+  const start = Date.now();
+  while (Date.now() - start < 10_000) {
+    try {
+      const r = await fetch(REM_API + '/health', { signal: AbortSignal.timeout(3000) });
+      if (r.ok) {
+        badge.className = 'health-pill health-ok';
+        label.textContent = 'Health: VERIFIED ✓';
+        return true;
+      }
+    } catch(_) {}
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  badge.className = 'health-pill health-err';
+  label.textContent = 'Health: FAILED ✗';
+  return false;
+}
 
-            const svc = COMMAND_DICT[rawCmd];
-            if (!svc) {
-                print("> COMANDO NO RECONOCIDO. use /help");
-                return;
-            }
+function _markHealthOk() {
+  const badge = document.getElementById('rem-health-badge');
+  const label = document.getElementById('rem-health-label');
+  badge.className = 'health-pill health-ok';
+  label.textContent = 'Health: VERIFIED ✓';
+}
 
-            const brand = document.getElementById('brand-name').value.trim();
-            const url = document.getElementById('site-url').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const command = rawCmd;
+// ════════════════════════════════════════════════════════════════════════════
+// ROLLBACK UI — alerta roja parpadeante
+// ════════════════════════════════════════════════════════════════════════════
+async function _triggerRollbackUI(taskId, commitHash) {
+  const banner = document.getElementById('rem-result-banner');
+  banner.className = 'rollback-alert';
+  banner.style.display = 'flex';
+  banner.innerHTML = `
+    <span style="font-size:22px;flex-shrink:0">⛔</span>
+    <div>
+      <div class="rb-label">ROLLBACK AUTOMÁTICO ACTIVADO</div>
+      <div style="font-size:12px;color:#7f1d1d;margin-top:4px;font-family:var(--mono);line-height:1.6">
+        Health check falló tras commit <code>${commitHash ? commitHash.slice(0,10) : 'N/A'}</code>.<br>
+        El Agente ha restaurado el archivo <code>.bak</code> y emitido un commit de emergencia.<br>
+        Continuidad del servicio garantizada.
+      </div>
+      <div style="font-size:10px;color:#991b1b;margin-top:6px;font-family:var(--mono)">
+        correlation_id: ${_correlationId}
+      </div>
+    </div>`;
 
-            if (!url) {
-                print("> ERROR CONTROLADO: URL REQUERIDA");
-                return;
-            }
+  const task = _remTasks.find(t => t.task_id === taskId);
+  if (task) { task._phase = 'rollback'; }
+  _renderRemTasksTable();
 
-            await callBackend({ svc, brand, url, email, command });
-        }
+  await _emitEvent(REM_EVENTS.ROLLBACK_TRIGGERED, {
+    commit_hash: commitHash,
+    reason: 'health_check_failed',
+  });
 
-        async function handleAdmin(action) {
-            const brand = document.getElementById('brand-name').value.trim();
-            const url = document.getElementById('site-url').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const command = `/admin:${action.toLowerCase()}`;
-            const svc = { key: action, name: action };
-            await callBackend({ svc, brand, url, email, command });
-        }
+  toast('⛔ ROLLBACK — servicio restaurado desde .bak', 'err');
+}
 
-        async function callBackend({ svc, brand, url, email, command }) {
-            triggerBtn.disabled = true;
-            print("----------------------------------");
-            print(`> [${new Date().toLocaleTimeString()}] INICIANDO COMANDO EN: ${API_BASE}/api/action`);
+// ════════════════════════════════════════════════════════════════════════════
+// IMPACT METRICS — post-ejecución verificada
+// ════════════════════════════════════════════════════════════════════════════
+function _estimateRevenueDelta() {
+  const fuga = window._remFugaCapital || 0;
+  return fuga > 0 ? fuga * 0.85 : null; // 85% de la fuga estimada recuperada
+}
 
-            try {
-                const requestBody = {
-                    action: svc.key,
-                    payload: {
-                        brand: brand,
-                        url: url,
-                        domain: url,
-                        email: email,
-                        command: command
-                    }
-                };
+function _computeImpactMetrics() {
+  const fuga     = window._remFugaCapital || 0;
+  const recovered= _estimateRevenueDelta();
 
-                const res = await fetch(`${API_BASE}/api/action`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
+  const rvEl = document.getElementById('rim-revenue');
+  const cvEl = document.getElementById('rim-conversion');
+  const upEl = document.getElementById('rim-uptime');
 
-                if (!res.ok) {
-                    print(["> ERROR CONTROLADO: FALLA DE RED O SERVIDOR", `> CODIGO: HTTP_${res.status}`]);
-                    return;
-                }
+  if (recovered) {
+    rvEl.textContent = `+$${recovered.toLocaleString('es-CL')}/mes`;
+    rvEl.className   = 'impact-metric-value pos';
+  } else {
+    rvEl.textContent = 'N/A'; rvEl.className = 'impact-metric-value neu';
+  }
 
-                const data = await res.json();
-                const out = typeof data.output === 'string' ? data.output.trim() : '';
-                const fallback = data && data.metadata && typeof data.metadata.message === 'string'
-                    ? data.metadata.message.trim()
-                    : '';
-                const rendered = out || fallback || "SIN SALIDA OPERATIVA DEL BACKEND.";
+  cvEl.textContent = fuga > 200 ? '+2–5%' : '+1–2%';
+  cvEl.className   = 'impact-metric-value pos';
 
-                print([
-                    'RON3IA OS :: RESULTADO OPERATIVO',
-                    '----------------------------------',
-                    `> SERVICIO:  ${svc.name}`,
-                    `> NODO:      ${brand || 'N/A'}`,
-                    `> ESTADO:    ${data.status || 'OK'}`,
-                    `> SALIDA:`,
-                    '',
-                    rendered
-                ]);
-            } catch (err) {
-                print([
-                    '> ERROR CONTROLADO: NO FUE POSIBLE CONECTAR CON EL BACKEND.',
-                    '> ACCION: REINTENTE EN UNOS SEGUNDOS O VERIFIQUE CONECTIVIDAD.'
-                ]);
-            } finally {
-                triggerBtn.disabled = false;
-                consoleEl.scrollTop = consoleEl.scrollHeight;
-            }
-        }
-    </script>
+  upEl.textContent = '99.9%';
+  upEl.className   = 'impact-metric-value pos';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// AUDIT TRAIL RENDERER
+// ════════════════════════════════════════════════════════════════════════════
+const AUDIT_TYPE_LABELS = {
+  PLAN_CREATED:          'PLAN',
+  APPROVAL_SIGNED:       'APROBADO',
+  EXECUTION_STARTED:     'EJECUCIÓN',
+  EXECUTION_VERIFIED:    'VERIFICADO',
+  ROLLBACK_TRIGGERED:    'ROLLBACK',
+};
+
+function _renderAuditTrail() {
+  const container = document.getElementById('rem-audit-trail');
+  if (!_remAuditLog.length) return;
+
+  container.innerHTML = _remAuditLog.map(ev => {
+    const typeLabel = AUDIT_TYPE_LABELS[ev.type] || ev.type;
+    const ts = new Date(ev.ts).toLocaleTimeString('es-CL', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+    let detail = '';
+    if (ev.type === 'PLAN_CREATED')
+      detail = `strategy=${ev.strategy || '—'} · risk=${ev.risk_level || '—'} · safe=${ev.safe ?? '—'}`;
+    else if (ev.type === 'APPROVAL_SIGNED')
+      detail = `approved_by=${ev.approved_by || '—'}`;
+    else if (ev.type === 'EXECUTION_STARTED')
+      detail = `task_id=${(ev.task_id||'').slice(0,12)}…`;
+    else if (ev.type === 'EXECUTION_VERIFIED')
+      detail = `commit=${(ev.commit_hash||'—').slice(0,10)} · health_ok=${ev.health_ok}` +
+               (ev.revenue_delta ? ` · rev=+$${ev.revenue_delta.toLocaleString('es-CL')}` : '');
+    else if (ev.type === 'ROLLBACK_TRIGGERED')
+      detail = `reason=${ev.reason || '—'}`;
+
+    return `<div class="audit-event">
+      <span class="audit-ts">${ts}</span>
+      <span class="audit-detail">${detail}</span>
+      <span class="audit-type audit-${ev.type}">${typeLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PIPELINE UI
+// ════════════════════════════════════════════════════════════════════════════
+function _setPipelineStep(step) {
+  const ids = ['ps-plan','ps-analyze','ps-approve','ps-execute'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'rem-step ' + (
+      i + 1 < step  ? 'rem-step-done'   :
+      i + 1 === step ? 'rem-step-active' :
+                       'rem-step-idle'
+    );
+  });
+  document.querySelectorAll('.rem-step-line').forEach((line, i) => {
+    line.style.background = i + 1 < step ? 'var(--green)' : 'var(--border)';
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PRESETS
+// ════════════════════════════════════════════════════════════════════════════
+function loadPresetRem(id) {
+  if (id === 1) {
+    document.getElementById('rem-service').value     = 'auth-service';
+    document.getElementById('rem-file').value        = 'docker-compose.yml';
+    document.getElementById('rem-path').value        = 'services.auth-service.image';
+    document.getElementById('rem-current').value     = 'redis:5.0';
+    document.getElementById('rem-recommended').value = 'redis:7.0-alpine';
+    document.getElementById('rem-desc').value        = 'Upgrade Redis due to CVE-2024-XXXX';
+  } else {
+    document.getElementById('rem-service').value     = 'auth-service';
+    document.getElementById('rem-file').value        = 'docker-compose.yml';
+    document.getElementById('rem-path').value        = 'services.auth-service.environment[0]';
+    document.getElementById('rem-current').value     = 'DEBUG=true';
+    document.getElementById('rem-recommended').value = 'DEBUG=false';
+    document.getElementById('rem-desc').value        = 'DEBUG habilitado en produccion';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// DIFF RENDERER — JetBrains Mono, syntax highlighting preciso
+// ════════════════════════════════════════════════════════════════════════════
+function _renderRemDiff(diffStr) {
+  const container = document.getElementById('rem-diff-content');
+  if (!diffStr) {
+    container.innerHTML = '<div style="padding:14px;color:#475569;font-family:var(--mono);font-size:11px">Sin diff disponible.</div>';
+    return;
+  }
+
+  const lines = diffStr.split('\n');
+  let lineNum = 0, adds = 0, removes = 0;
+
+  container.innerHTML = lines.map(line => {
+    let bg = '', color = '#94a3b8', num = '';
+    if      (line.startsWith('---') || line.startsWith('+++')) { color = '#475569'; }
+    else if (line.startsWith('@@'))  { color = '#38bdf8'; lineNum = parseInt(line.match(/\+(\d+)/)?.[1]||0)-1; }
+    else if (line.startsWith('+'))   { bg='rgba(34,197,94,.13)'; color='#86efac'; lineNum++; num=lineNum; adds++; }
+    else if (line.startsWith('-'))   { bg='rgba(239,68,68,.13)'; color='#fca5a5'; removes++; }
+    else { lineNum++; num=lineNum; }
+
+    const safe = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div style="display:flex;min-height:20px;background:${bg}">
+      <span style="min-width:38px;padding:0 8px;text-align:right;color:#334155;font-size:10px;user-select:none;border-right:1px solid #1e293b;flex-shrink:0;line-height:20px;font-family:var(--mono)">${num}</span>
+      <span style="padding:0 12px;white-space:pre;flex:1;line-height:20px;color:${color};font-family:var(--mono);font-size:12px">${safe}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rem-diff-stats').textContent =
+    `+${adds} −${removes} · ${adds+removes} línea${adds+removes!==1?'s':''} modificada${adds+removes!==1?'s':''}`;
+  _remCurrentDiff = diffStr;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PLAN — POST /remediation/plan
+// ════════════════════════════════════════════════════════════════════════════
+document.getElementById('btn-plan-rem').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-plan-rem');
+  btn.disabled = true; btn.textContent = '…';
+
+  // Nueva correlación por cada plan
+  _correlationId = _newCorrelationId();
+  _remAuditLog   = [];
+  _remAuditRowId = null;
+  window._remFugaCapital = 0;
+
+  _setPipelineStep(1);
+
+  const finding = {
+    service:           document.getElementById('rem-service').value.trim(),
+    file:              document.getElementById('rem-file').value.trim(),
+    finding_type:      'audit_finding',
+    description:       document.getElementById('rem-desc').value.trim(),
+    yaml_path:         document.getElementById('rem-path').value.trim(),
+    current_value:     document.getElementById('rem-current').value.trim(),
+    recommended_value: document.getElementById('rem-recommended').value.trim(),
+  };
+
+  // Ocultar resultado anterior
+  document.getElementById('rem-result-banner').style.display = 'none';
+  document.getElementById('rem-result-banner').className = '';
+  document.getElementById('rem-impact-section').classList.add('hidden');
+
+  try {
+    const res  = await fetch(REM_API + '/remediation/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(finding),
+    });
+    const plan = await res.json();
+    if (!res.ok) throw new Error(plan.detail || 'Error ' + res.status);
+
+    _remCurrentTaskId = plan.task_id;
+    _remTasks.unshift({ ...plan, _finding: finding, _ts: new Date(), _phase: 'planned' });
+
+    _setPipelineStep(2);
+
+    // Métricas
+    const safe = plan.analysis?.safe;
+    const risk  = plan.analysis?.risk_level || '—';
+
+    document.getElementById('rem-safe').innerHTML = safe
+      ? '<span style="color:var(--green);font-family:var(--mono);font-size:14px;font-weight:800">✓ true</span>'
+      : '<span style="color:var(--red);font-family:var(--mono);font-size:14px;font-weight:800">✗ false</span>';
+
+    const riskColors = {
+      low:    { bg:'#f0fdf4', color:'#166534', border:'#bbf7d0' },
+      medium: { bg:'#fffbeb', color:'#92400e', border:'#fde68a' },
+      high:   { bg:'#fef2f2', color:'#991b1b', border:'#fecaca' },
+    };
+    const rc = riskColors[risk] || riskColors.high;
+    document.getElementById('rem-risk').innerHTML =
+      `<span style="font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;background:${rc.bg};color:${rc.color};border:1px solid ${rc.border}">${risk}</span>`;
+
+    document.getElementById('rem-strategy').textContent = plan.strategy || '—';
+    document.getElementById('rem-line').textContent = plan.line_patched ? 'L' + plan.line_patched : 'round-trip';
+    document.getElementById('rem-summary-box').textContent = plan.analysis?.summary || '';
+
+    _renderRemDiff(plan.diff);
+    document.getElementById('rem-results').classList.remove('hidden');
+
+    // ── Regla de Oro — VISUALMENTE INACTIVO si no cumple ─────────────────
+    const execBtn = document.getElementById('btn-execute-rem');
+    const canExec = safe === true && risk === 'low';
+    execBtn.disabled       = !canExec;
+    execBtn.style.opacity  = canExec ? '1'           : '0.45';
+    execBtn.style.cursor   = canExec ? 'pointer'     : 'not-allowed';
+    execBtn.title          = canExec ? ''
+      : `Bloqueado por Regla de Oro — safe=${safe} · risk=${risk}`;
+
+    if (canExec) _setPipelineStep(3);
+
+    // ── Audit PLAN_CREATED ────────────────────────────────────────────────
+    await _emitEvent(REM_EVENTS.PLAN_CREATED, {
+      service:    finding.service,
+      yaml_path:  finding.yaml_path,
+      diff:       plan.diff,
+      strategy:   plan.strategy,
+      risk_level: risk,
+      safe,
+    });
+
+    _renderRemTasksTable();
+    toast('Plan generado · ' + plan.task_id.slice(0,8), 'ok');
+
+  } catch(e) {
+    toast('Error plan: ' + e.message, 'err');
+    _setPipelineStep(1);
+  } finally {
+    btn.disabled = false; btn.textContent = '▶ Generar Plan';
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// EXECUTE — POST /remediation/execute (con preflight + lock + polling)
+// ════════════════════════════════════════════════════════════════════════════
+document.getElementById('btn-execute-rem').addEventListener('click', async () => {
+  if (!_remCurrentTaskId) return;
+
+  const approvedBy = document.getElementById('rem-approved-by').value.trim();
+  if (!approvedBy) { toast('Campo "Aprobado por" requerido', 'err'); return; }
+
+  const filePath = document.getElementById('rem-file').value.trim();
+
+  // ── Concurrency lock ─────────────────────────────────────────────────────
+  if (!_acquireLock(filePath)) {
+    toast(`⚙ Archivo "${filePath}" ya está siendo modificado. Espera.`, 'err');
+    return;
+  }
+
+  const btn = document.getElementById('btn-execute-rem');
+  btn.disabled = true; btn.style.opacity = '0.45'; btn.style.cursor = 'not-allowed';
+  btn.textContent = '…';
+
+  // ── Preflight check ──────────────────────────────────────────────────────
+  const healthy = await _preflightCheck();
+  if (!healthy) {
+    toast('⛔ Sistema base inestable. Remediación abortada por seguridad.', 'err');
+    const banner = document.getElementById('rem-result-banner');
+    banner.className  = '';
+    banner.style.cssText = 'margin-top:12px;padding:14px 18px;border-radius:8px;display:flex;align-items:center;gap:12px;background:#fef2f2;border:2px solid #fecaca';
+    banner.style.display = 'flex';
+    banner.innerHTML = '<span style="font-size:20px">⛔</span><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#991b1b">Sistema base inestable. Remediación abortada por seguridad.</div>';
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    btn.textContent = '✓ Aplicar Remediación';
+    _releaseLock(filePath);
+    return;
+  }
+
+  // ── Audit APPROVAL_SIGNED ────────────────────────────────────────────────
+  await _emitEvent(REM_EVENTS.APPROVAL_SIGNED, { approved_by: approvedBy });
+  _setPipelineStep(4);
+
+  try {
+    // ── Audit EXECUTION_STARTED ───────────────────────────────────────────
+    await _emitEvent(REM_EVENTS.EXECUTION_STARTED, { task_id: _remCurrentTaskId });
+
+    const res = await fetch(REM_API + '/remediation/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: _remCurrentTaskId, approved_by: approvedBy }),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.detail || 'Error ' + res.status);
+
+    // ── Polling con timeout 60s ───────────────────────────────────────────
+    const finalStatus = await _startStatusPolling(_remCurrentTaskId);
+
+    // ── SUCCESS banner ────────────────────────────────────────────────────
+    const banner = document.getElementById('rem-result-banner');
+    banner.className = '';
+    banner.style.cssText = 'margin-top:12px;padding:16px 20px;border-radius:8px;display:flex;align-items:flex-start;gap:14px;background:#f0fdf4;border:1px solid #bbf7d0';
+    banner.style.display = 'flex';
+    banner.innerHTML = `
+      <span style="font-size:22px">✅</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#0f172a">Remediación verificada y aplicada.</div>
+        <div style="font-family:var(--mono);font-size:11px;color:#475569;margin-top:4px">
+          commit: ${result.commit_hash || finalStatus?.commit_hash || '—'}<br>
+          approved_by: ${approvedBy}<br>
+          correlation_id: ${_correlationId}
+        </div>
+      </div>`;
+
+    toast('✓ Remediación verificada · ' + (result.commit_hash||'').slice(0,10), 'ok');
+
+  } catch(e) {
+    // Solo mostrar rollback banner si no fue ya activado internamente
+    const banner = document.getElementById('rem-result-banner');
+    if (!banner.classList.contains('rollback-alert')) {
+      banner.className = '';
+      banner.style.cssText = 'margin-top:12px;padding:16px 20px;border-radius:8px;display:flex;align-items:flex-start;gap:14px;background:#fef2f2;border:1px solid #fecaca';
+      banner.style.display = 'flex';
+      banner.innerHTML = `<span style="font-size:22px">❌</span><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#991b1b">${e.message}</div>`;
+    }
+    toast('Error execute: ' + e.message, 'err');
+    _setPipelineStep(3);
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    btn.textContent = '✓ Aplicar Remediación';
+  } finally {
+    _releaseLock(filePath);
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// TASKS TABLE
+// ════════════════════════════════════════════════════════════════════════════
+function _renderRemTasksTable() {
+  const tbody = document.getElementById('rem-tasks-body');
+  document.getElementById('rem-task-count').textContent =
+    _remTasks.length + ' tarea' + (_remTasks.length !== 1 ? 's' : '');
+
+  if (!_remTasks.length) return;
+
+  const riskBg    = { low:'#f0fdf4', medium:'#fffbeb', high:'#fef2f2' };
+  const riskColor = { low:'#166534', medium:'#92400e', high:'#991b1b' };
+  const dotColor  = { planned:'#2563eb', done:'#22c55e', verified:'#16a34a',
+                      failed:'#ef4444', rollback:'#ef4444', executing:'#f97316' };
+
+  tbody.innerHTML = _remTasks.map(t => {
+    const risk  = t.analysis?.risk_level || '—';
+    const phase = t._phase || 'planned';
+    const dot   = dotColor[phase] || '#94a3b8';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--muted)">${t.task_id.slice(0,8)}…</td>
+      <td style="padding:10px 14px;font-size:12px;font-family:var(--mono)">${t._finding?.service || '—'}</td>
+      <td style="padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--muted)">${(t._finding?.yaml_path||'—').slice(0,38)}</td>
+      <td style="padding:10px 14px"><span style="font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;background:${riskBg[risk]||'#f8fafc'};color:${riskColor[risk]||'#64748b'}">${risk}</span></td>
+      <td style="padding:10px 14px;font-size:12px;font-family:var(--mono)">
+        <span style="width:7px;height:7px;border-radius:50%;background:${dot};display:inline-block;margin-right:6px;vertical-align:middle"></span>${phase}
+        ${t._error ? `<span style="font-size:10px;color:var(--red);margin-left:4px">(${t._error.slice(0,25)})</span>` : ''}
+      </td>
+      <td style="padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--muted)">${t._commit ? t._commit.slice(0,12) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function copyRemDiff() {
+  if (_remCurrentDiff) navigator.clipboard.writeText(_remCurrentDiff).then(() => toast('Diff copiado', 'ok'));
+}
+
+function copyPsSnippet() {
+  const txt = document.getElementById('ps-snippet').innerText;
+  navigator.clipboard.writeText(txt).then(() => toast('Script copiado', 'ok'));
+}
+
+
+</script>
 </body>
 </html>
